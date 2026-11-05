@@ -1,0 +1,57 @@
+{
+  "metrics": {
+    "accuracy": 0.9986666666666667,
+    "precision_macro": 0.9963806384159092,
+    "recall_macro": 0.9930288461538461,
+    "f1_macro": 0.9946681605794592,
+    "f1_weighted": 0.9986644149551203,
+    "recall_falhas_macro": 0.9907051282051281,
+    "recall_por_classe": {
+      "0": 1.0,
+      "1": 0.9846153846153847,
+      "2": 0.9875,
+      "3": 1.0
+    },
+    "roc_auc_ovr_macro": 0.9999873449223342,
+    "pr_auc_macro": 0.9997404949024694
+  },
+  "per_class": {
+    "Normal": {
+      "precision": 0.9992211838006231,
+      "recall": 1.0,
+      "f1-score": 0.9996104402025711,
+      "support": 1283.0
+    },
+    "Desgaste de ferramenta": {
+      "precision": 1.0,
+      "recall": 0.9846153846153847,
+      "f1-score": 0.9922480620155039,
+      "support": 65.0
+    },
+    "Falha de refrigeração": {
+      "precision": 1.0,
+      "recall": 0.9875,
+      "f1-score": 0.9937106918238994,
+      "support": 80.0
+    },
+    "Desalinhamento / trinca": {
+      "precision": 0.9863013698630136,
+      "recall": 1.0,
+      "f1-score": 0.993103448275862,
+      "support": 72.0
+    },
+    "accuracy": 0.9986666666666667,
+    "macro avg": {
+      "precision": 0.9963806384159092,
+      "recall": 0.9930288461538461,
+      "f1-score": 0.9946681605794592,
+      "support": 1500.0
+    },
+    "weighted avg": {
+      "precision": 0.9986763182975577,
+      "recall": 0.9986666666666667,
+      "f1-score": 0.9986644149551203,
+      "support": 1500.0
+    }
+  }
+}

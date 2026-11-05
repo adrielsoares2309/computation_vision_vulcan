@@ -1,0 +1,96 @@
+{
+  "status": "experimental_tiny_dataset",
+  "experimental": true,
+  "validated_for_industrial_use": false,
+  "architecture": "HOG + RGB histograms + 4x4 spatial means + StandardScaler + 1-nearest-neighbor",
+  "trained_at_utc": "2026-10-29T13:32:21.592529+00:00",
+  "source_images": {
+    "data\\raw\\imagens\\solda_aprovada.png": "a445aaaa4697d0d510016527addd77a3c206bd47e294867a41af88b9fe11a211",
+    "data\\raw\\imagens\\solda_reprovada.png": "6911badae9065d3766ef9518b4a229fc8cdf5e71836b98b4071093df0730664b",
+    "data\\raw\\imagens\\termica_solda_aprovada.png": "1367a2e510f06e2c3e0da244748247afd6fa1624fa78b5615b44391982a496f9",
+    "data\\raw\\imagens\\termica_solda_reprovada.png": "9fe67323bbd6620590a071a6fb2a3b845e8c85794baeac6e72f7a339225d113f"
+  },
+  "classes": {
+    "APROVADA": 0,
+    "REPROVADA": 1
+  },
+  "modalities": [
+    "termica",
+    "visual"
+  ],
+  "input_size_width_height": [
+    128,
+    128
+  ],
+  "preprocessing": {
+    "color": "RGB",
+    "resize": "128x128",
+    "pixel_type": "uint8",
+    "feature_version": "hog_rgb_hist_v1"
+  },
+  "initial_weights": {
+    "source": null,
+    "pretrained": false
+  },
+  "deep_learning_framework": {
+    "pytorch_available": false,
+    "torchvision_available": false,
+    "transfer_learning_used": false,
+    "reason": "PyTorch/torchvision are unavailable; OpenCV + scikit-learn baseline used without external weights."
+  },
+  "library_versions": {
+    "python": "3.14.6",
+    "opencv": "5.0.0",
+    "scikit_learn": "1.9.1",
+    "numpy": "2.5.4",
+    "joblib": "1.6.0"
+  },
+  "parameters": {
+    "scaler": "StandardScaler",
+    "classifier": "KNeighborsClassifier(n_neighbors=1, metric='euclidean', weights='distance')",
+    "seed": 42
+  },
+  "counts_by_modality_and_class": {
+    "termica/APROVADA": 1,
+    "termica/REPROVADA": 1,
+    "visual/APROVADA": 1,
+    "visual/REPROVADA": 1
+  },
+  "unique_groups_by_modality_and_class": {
+    "termica/APROVADA": 1,
+    "termica/REPROVADA": 1,
+    "visual/APROVADA": 1,
+    "visual/REPROVADA": 1
+  },
+  "split": {
+    "strategy": "all_available_samples_for_functional_fit",
+    "train_count": 4,
+    "validation_count": 0,
+    "test_count": 0
+  },
+  "metrics": {
+    "status": "insufficient_independent_data",
+    "metrics": null,
+    "confusion_matrix": null,
+    "reasons": [
+      "Modo tiny autorizado: apenas um exemplar por classe/modalidade; não há validação ou teste independentes."
+    ],
+    "per_modality": {
+      "termica": {
+        "APROVADA": 1,
+        "REPROVADA": 1
+      },
+      "visual": {
+        "APROVADA": 1,
+        "REPROVADA": 1
+      }
+    }
+  },
+  "limitations": [
+    "Apenas quatro imagens originais, uma por classe e modalidade; os modelos tiny são demonstrativos e não generalizam de forma avaliável.",
+    "Rótulos recebidos por nome do arquivo, sem validação de especialista independente.",
+    "Empresa fictícia e possibilidade de dados simulados constam na documentação do projeto.",
+    "Thermal RGB false-color has no radiometric calibration; physical temperatures cannot be recovered.",
+    "Similarity scores are not calibrated probabilities."
+  ]
+}

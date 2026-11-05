@@ -1,0 +1,609 @@
+# Documentação Técnica da Arquitetura de Diretórios
+## Projeto VulcanTech-OEE
+
+**Projeto:** VulcanTech Smart Metals S.A. — Monitoramento Industrial Inteligente  
+**Tipo:** MVP — Produto Mínimo Viável  
+**Tecnologias principais:** Python, Pandas, NumPy, Scikit-learn, OpenCV, FastAPI, Streamlit, SQLite e Docker.
+
+---
+
+## 1. Visão geral do projeto
+
+O projeto VulcanTech-OEE tem como objetivo desenvolver uma solução integrada de monitoramento de eficiência operacional, análise preditiva de falhas e inspeção de qualidade por visão computacional.
+
+A aplicação deverá processar dados históricos armazenados em arquivos CSV, receber novos dados por meio de uma API, executar modelos de inteligência artificial e disponibilizar os resultados em dashboards interativos.
+
+Como se trata de um MVP, os dados de sensores, os eventos industriais e as imagens poderão ser simulados. A arquitetura, entretanto, será organizada para permitir uma futura substituição dos dados fictícios por dados reais, sem exigir a reescrita completa da aplicação.
+
+O projeto será dividido em módulos independentes, responsáveis por tarefas específicas. Essa separação facilita a manutenção, os testes, o desenvolvimento incremental e a integração entre os componentes.
+
+## 2. Estrutura geral de diretórios
+
+```text
+VulcanTech-OEE/
+│
+├── data/
+│   ├── raw/
+│   ├── processed/
+│   ├── inference/
+│   └── simulated/
+│
+├── notebooks/
+│
+├── src/
+│   ├── data/
+│   ├── ml/
+│   ├── vision/
+│   ├── oee/
+│   └── simulation/
+│
+├── models/
+│   ├── tabular/
+│   └── vision/
+│
+├── backend/
+│   ├── schemas/
+│   ├── routes/
+│   └── services/
+│
+├── frontend/
+│   ├── pages/
+│   └── components/
+│
+├── database/
+├── tests/
+│
+├── reports/
+│   ├── eda/
+│   ├── ml/
+│   └── vision/
+│
+├── docs/
+│
+├── .env.example
+├── .gitignore
+├── requirements.txt
+├── Dockerfile
+├── docker-compose.yml
+└── README.md
+```
+
+A estrutura acima representa os diretórios e arquivos previstos. As pastas internas serão criadas conforme o desenvolvimento dos respectivos módulos.
+
+---
+
+## 3. Diretório `data/` — Gerenciamento dos dados
+
+O diretório `data/` armazenará os arquivos utilizados durante o desenvolvimento, treinamento, simulação e execução da aplicação.
+
+A organização dos dados será dividida de acordo com sua finalidade e etapa de processamento.
+
+### 3.1. `data/raw/`
+
+Armazenará os dados originais recebidos para o projeto.
+
+**Conteúdo previsto:**
+- Arquivos CSV históricos de sensores industriais.
+- Imagens originais de soldas.
+- Imagens termográficas.
+- Outros arquivos fornecidos para treinamento ou validação.
+
+Os arquivos dessa pasta deverão ser preservados sem modificações. O tratamento será executado sobre cópias ou dados carregados em memória, evitando a perda dos dados originais.
+
+### 3.2. `data/processed/`
+
+Armazenará os dados após o tratamento e a preparação para análise ou treinamento.
+
+**Conteúdo previsto:**
+- CSVs com dados limpos.
+- Arquivos Parquet com dados processados.
+- Conjuntos de atributos utilizados pelos modelos.
+- Metadados associados às imagens e suas classificações.
+
+Essa pasta será alimentada pelo pipeline de engenharia de dados. Os arquivos produzidos deverão ter um esquema documentado e compatível com as etapas seguintes.
+
+### 3.3. `data/inference/`
+
+Armazenará os arquivos temporários ou persistidos associados às inferências realizadas durante a execução da aplicação.
+
+**Conteúdo previsto:**
+- Imagens recebidas para inspeção.
+- Imagens intermediárias utilizadas no processamento visual.
+- Resultados de processamento que precisem ser inspecionados ou auditados.
+
+Essa pasta não deverá ser utilizada como substituta do histórico operacional. A retenção dos arquivos dependerá da necessidade de rastreabilidade e do espaço disponível.
+
+### 3.4. `data/simulated/`
+
+Armazenará dados gerados artificialmente para testar o funcionamento do MVP.
+
+**Conteúdo previsto:**
+- Leituras simuladas de sensores.
+- Eventos artificiais de falhas e paradas.
+- Registros de produção fictícios.
+- Dados utilizados para demonstrar atualizações do dashboard.
+
+Os registros simulados deverão ser identificáveis como tais, permitindo distinguir os resultados demonstrativos dos dados históricos fornecidos.
+
+---
+
+## 4. Diretório `notebooks/` — Análise e experimentação
+
+O diretório `notebooks/` conterá os notebooks Jupyter utilizados na exploração dos dados, na validação das hipóteses e no desenvolvimento inicial dos modelos.
+
+Os notebooks serão ambientes de experimentação. A lógica validada deverá ser transferida para módulos reutilizáveis em `src/`, evitando que o funcionamento da aplicação dependa da execução manual de células.
+
+### Notebooks previstos
+
+| Arquivo | Responsabilidade |
+|---|---|
+| `01_analise_exploratoria.ipynb` | Examinar dimensões, tipos de dados, distribuições, valores ausentes, ruídos e relações entre variáveis. |
+| `02_tratamento_dados.ipynb` | Experimentar estratégias de limpeza, tratamento de valores inválidos e interpolação temporal. |
+| `03_feature_engineering.ipynb` | Criar e validar atributos derivados, janelas móveis e variáveis condicionadas à liga metálica e à célula. |
+| `04_treinamento_falhas.ipynb` | Desenvolver os primeiros modelos de classificação de falhas. |
+| `05_avaliacao_modelo.ipynb` | Comparar modelos, avaliar métricas e examinar erros de classificação. |
+| `06_exploracao_imagens.ipynb` | Inspecionar imagens, experimentar filtros, contornos, segmentação e análise termográfica. |
+
+A numeração indica uma sequência recomendada de desenvolvimento, mas não obriga que todas as atividades sejam executadas exclusivamente nos notebooks.
+
+---
+
+## 5. Diretório `src/` — Código-fonte principal
+
+O diretório `src/` reunirá a lógica central do projeto. Seus módulos serão independentes da interface gráfica e deverão poder ser chamados tanto por scripts quanto pelos serviços da API.
+
+### 5.1. `src/data/` — Engenharia de dados
+
+Responsável pela ingestão, validação, limpeza e transformação dos dados tabulares.
+
+| Arquivo | Responsabilidade |
+|---|---|
+| `__init__.py` | Identificar o diretório como um pacote Python e permitir a organização de suas importações. |
+| `loader.py` | Carregar CSVs, Parquet e outros formatos explicitamente suportados. |
+| `validator.py` | Validar colunas obrigatórias, tipos, formatos de data, identificadores e regras de consistência. |
+| `cleaner.py` | Tratar valores ausentes, duplicações, ruídos e leituras fisicamente inválidas. |
+| `normalizer.py` | Aplicar transformações numéricas adequadas, incluindo normalização condicionada à célula ou à liga quando justificada. |
+| `feature_engineering.py` | Gerar variáveis derivadas, indicadores de severidade e atributos temporais. |
+| `pipeline.py` | Coordenar o processamento completo, desde a entrada até a geração dos dados tratados. |
+
+O arquivo `pipeline.py` será o ponto central do tratamento automático. Tanto a importação de CSV quanto a ingestão de dados pela API deverão reutilizar as mesmas regras de validação e transformação, respeitando as diferenças entre processamento em lote e processamento incremental.
+
+### 5.2. `src/ml/` — Machine Learning
+
+Responsável pelo treinamento, avaliação e execução dos modelos preditivos.
+
+| Arquivo | Responsabilidade |
+|---|---|
+| `__init__.py` | Organizar o módulo Python. |
+| `train.py` | Treinar os modelos com os conjuntos de dados preparados. |
+| `predict.py` | Executar inferências sobre novas leituras de sensores. |
+| `evaluate.py` | Calcular métricas como precision, recall, F1-score e matriz de confusão. |
+| `maintenance.py` | Consolidar regras e estimativas relacionadas à necessidade de manutenção. |
+| `anomaly_detection.py` | Detectar comportamentos atípicos nas leituras dos sensores. |
+
+O classificador deverá identificar as classes de falha definidas no conjunto de dados. O detector de anomalias poderá identificar leituras incomuns, mas uma anomalia não deverá ser automaticamente considerada uma falha confirmada.
+
+O módulo de manutenção deverá utilizar resultados do modelo e critérios operacionais documentados para produzir estimativas de risco e recomendações.
+
+**Observação:** a previsão de quando uma falha ocorrerá exige dados e alvos adequados. Se o conjunto de dados não contiver informações temporais suficientes sobre falhas futuras, o MVP deverá apresentar classificação de risco, e não uma estimativa temporal de vida útil como se fosse comprovada.
+
+### 5.3. `src/vision/` — Visão computacional
+
+Responsável pelo processamento das imagens e pela identificação de possíveis defeitos visuais ou térmicos.
+
+| Arquivo | Responsabilidade |
+|---|---|
+| `__init__.py` | Organizar o módulo Python. |
+| `preprocessing.py` | Executar leitura, redimensionamento, conversão de cores, filtragem e preparação das imagens. |
+| `weld_inspection.py` | Aplicar técnicas de inspeção geométrica, detecção de bordas e análise de contornos de soldas. |
+| `thermal_analysis.py` | Segmentar regiões de interesse em imagens térmicas e analisar zonas potencialmente superaquecidas. |
+| `predict_image.py` | Coordenar a inferência visual e padronizar os resultados da inspeção. |
+
+O módulo poderá utilizar OpenCV para técnicas tradicionais, como Canny, análise de contornos e limiarização em HSV.
+
+Caso seja treinado um modelo de classificação ou detecção de defeitos, sua inferência também poderá ser integrada nesse módulo. A escolha dependerá da quantidade, da qualidade e da rotulagem das imagens disponíveis.
+
+Imagens térmicas representadas por cores RGB ou HSV não fornecem necessariamente temperaturas físicas. A conversão para graus Celsius exige dados de calibração ou informações térmicas confiáveis.
+
+### 5.4. `src/oee/` — Indicadores de eficiência operacional
+
+Responsável pelo cálculo dos indicadores de eficiência global dos equipamentos.
+
+| Arquivo | Responsabilidade |
+|---|---|
+| `__init__.py` | Organizar o módulo Python. |
+| `availability.py` | Calcular a disponibilidade a partir dos tempos planejados e dos períodos de operação e parada. |
+| `performance.py` | Calcular a performance com base no tempo de ciclo ideal e na produção realizada. |
+| `quality.py` | Calcular a proporção de unidades boas em relação à produção total. |
+| `calculator.py` | Integrar os componentes e calcular o OEE final. |
+
+O cálculo utilizará as fórmulas:
+
+**Disponibilidade**
+
+Disponibilidade = Tempo de operação / Tempo de produção planejado
+
+**Performance**
+
+Performance = (Tempo de ciclo ideal × Quantidade total produzida) / Tempo de operação
+
+**Qualidade**
+
+Qualidade = Quantidade de unidades boas / Quantidade total produzida
+
+**OEE**
+
+OEE = Disponibilidade × Performance × Qualidade
+
+Os fatores deverão ser calculados como proporções antes da multiplicação. O resultado final poderá ser apresentado em percentual.
+
+O cálculo confiável do OEE exige dados sobre produção, ciclos, unidades boas, paradas e tempo planejado. Leituras de sensores, isoladamente, não são suficientes para determinar todos esses componentes. No MVP, os dados operacionais ausentes deverão ser simulados ou explicitamente identificados como indisponíveis.
+
+### 5.5. `src/simulation/` — Simulação industrial
+
+Responsável pela geração de dados fictícios utilizados nos testes de integração e nas demonstrações.
+
+| Arquivo | Responsabilidade |
+|---|---|
+| `__init__.py` | Organizar o módulo Python. |
+| `sensor_simulator.py` | Gerar leituras artificiais de sensores industriais com timestamps, identificadores e variáveis coerentes. |
+| `fault_generator.py` | Criar cenários de falhas, como desgaste de ferramenta, problemas de refrigeração e desalinhamento. |
+| `event_generator.py` | Gerar eventos operacionais, incluindo paradas, produção, rejeições e retomadas. |
+
+Os valores simulados deverão respeitar relações plausíveis entre as variáveis. Por exemplo, um cenário de falha de refrigeração poderá apresentar redução da vazão e elevação da temperatura, de acordo com as hipóteses adotadas.
+
+O simulador também deverá permitir gerar condições normais, para evitar que todos os registros apresentem falhas.
+
+---
+
+## 6. Diretório `models/` — Artefatos de Machine Learning
+
+Armazenará os modelos treinados e os componentes necessários para executar inferências consistentes.
+
+### 6.1. `models/tabular/`
+
+Armazenará modelos que utilizam dados estruturados, como leituras de sensores e atributos temporais.
+
+Arquivos previstos:
+
+- `failure_classifier.joblib`: classificador de falhas treinado.
+- `anomaly_detector.joblib`: detector de anomalias treinado, caso utilizado.
+- `preprocessing_pipeline.joblib`: transformações ajustadas nos dados de treinamento, quando necessário armazená-las separadamente.
+
+Os artefatos somente deverão ser gerados após o treinamento e a avaliação dos modelos. O pipeline de pré-processamento armazenado deverá ser compatível com as features esperadas durante a inferência.
+
+### 6.2. `models/vision/`
+
+Armazenará os artefatos associados aos modelos de visão computacional treinados.
+
+Arquivo previsto:
+
+- `weld_inspection_model.joblib`: modelo de inspeção visual, caso a implementação escolhida seja compatível com esse formato.
+
+Nem todo modelo de visão computacional utiliza o formato Joblib. Modelos baseados em outras bibliotecas poderão exigir formatos específicos. Caso a inspeção seja feita apenas com OpenCV e parâmetros de segmentação, não será necessário criar esse arquivo.
+
+---
+
+## 7. Diretório `backend/` — API de integração
+
+Responsável por expor as funcionalidades do projeto por meio de endpoints HTTP, permitindo que o frontend e outras aplicações acessem os dados e as inferências.
+
+### 7.1. `backend/schemas/`
+
+Contém os modelos de dados utilizados na validação das requisições e respostas com Pydantic.
+
+| Arquivo | Responsabilidade |
+|---|---|
+| `sensor.py` | Definir o formato das leituras recebidas, incluindo timestamps, célula, liga e variáveis de sensores. |
+| `prediction.py` | Definir o formato das respostas de classificação, probabilidades e resultados preditivos. |
+| `inspection.py` | Definir os dados de entrada e saída das inspeções visuais. |
+| `oee.py` | Definir a estrutura dos indicadores de OEE e dos resultados operacionais. |
+
+Os schemas padronizarão os contratos da API e permitirão rejeitar ou sinalizar requisições incompatíveis com os formatos esperados.
+
+### 7.2. `backend/routes/`
+
+Contém os endpoints que receberão as requisições HTTP.
+
+| Arquivo | Responsabilidade |
+|---|---|
+| `ingestion.py` | Receber dados enviados pela API e arquivos CSV importados. |
+| `predictions.py` | Disponibilizar a inferência dos modelos de Machine Learning. |
+| `inspections.py` | Receber imagens e disponibilizar os resultados da inspeção visual. |
+| `oee.py` | Disponibilizar os indicadores operacionais calculados. |
+| `history.py` | Consultar os registros históricos e os resultados persistidos. |
+
+A separação em rotas evita concentrar todas as funcionalidades em um único arquivo e facilita a manutenção da API.
+
+### 7.3. `backend/services/`
+
+Contém a lógica de integração executada pelas rotas.
+
+| Arquivo | Responsabilidade |
+|---|---|
+| `ingestion_service.py` | Coordenar a validação, o tratamento e a persistência dos dados recebidos. |
+| `inference_service.py` | Carregar ou acessar os modelos e executar as inferências solicitadas. |
+| `oee_service.py` | Consultar os dados necessários e coordenar os cálculos de OEE. |
+| `history_service.py` | Consultar e organizar os registros históricos e as previsões armazenadas. |
+
+As rotas deverão ser responsáveis pela comunicação HTTP, enquanto os serviços coordenarão as operações da aplicação. A lógica de tratamento e de cálculo permanecerá nos módulos especializados de `src/`.
+
+### Arquivo adicional recomendado: `backend/main.py`
+
+Será o ponto de entrada da API FastAPI.
+
+Suas responsabilidades serão:
+
+- Criar a aplicação FastAPI.
+- Registrar as rotas.
+- Configurar os mecanismos de inicialização necessários.
+- Disponibilizar a documentação interativa da API.
+- Configurar verificações básicas de saúde do serviço.
+
+O arquivo `backend/dependencies.py`, caso criado, poderá concentrar dependências compartilhadas, como acesso a serviços e recursos da aplicação.
+
+---
+
+## 8. Diretório `frontend/` — Interface e dashboards
+
+Responsável pela interface gráfica do MVP, construída com Streamlit.
+
+### 8.1. `frontend/pages/`
+
+Conterá as páginas do dashboard, separadas de acordo com a finalidade da informação apresentada.
+
+| Arquivo | Responsabilidade |
+|---|---|
+| `01_OEE_Tempo_Real.py` | Apresentar indicadores operacionais atualizados com dados recebidos ou simulados durante a execução. |
+| `02_Historico_Producao.py` | Consultar os dados históricos, filtrar períodos e comparar células, produção e indicadores. |
+| `03_Predicao_Manutencao.py` | Apresentar previsões de falhas, probabilidades, níveis de risco e informações para planejamento de manutenção. |
+| `04_Inspecao_Visual.py` | Exibir imagens analisadas, regiões suspeitas e resultados das inspeções de solda e termografia. |
+
+A interface deverá diferenciar claramente o histórico dos dados em fluxo e das previsões. Uma previsão deverá permanecer identificada como resultado do modelo, mesmo quando for apresentada junto a uma ocorrência real.
+
+### 8.2. `frontend/components/`
+
+Armazenará componentes visuais reutilizáveis.
+
+| Arquivo | Responsabilidade |
+|---|---|
+| `kpi_cards.py` | Criar componentes para exibição de indicadores, valores e variações. |
+| `charts.py` | Centralizar a criação de gráficos de linhas, barras, distribuições e séries temporais. |
+| `filters.py` | Implementar filtros reutilizáveis para períodos, células, ligas e tipos de falha. |
+
+### Arquivos adicionais recomendados
+
+- `frontend/app.py`: ponto de entrada da interface Streamlit, responsável pela navegação geral e pela configuração inicial.
+- `frontend/styles.py`: centralizar estilos visuais, cores, tipografia e elementos de apresentação, caso sejam necessários.
+
+A interface deverá consumir os serviços do backend sempre que a informação depender da API. Isso mantém o frontend desacoplado das regras de negócio e dos modelos.
+
+---
+
+## 9. Diretório `database/` — Persistência
+
+Responsável por organizar o acesso ao banco de dados utilizado pelo MVP.
+
+Arquivos recomendados:
+
+| Arquivo | Responsabilidade |
+|---|---|
+| `db.py` | Configurar a conexão com o banco e fornecer os mecanismos de acesso necessários. |
+| `repositories.py` | Implementar operações de gravação e consulta de leituras, eventos, previsões e resultados de inspeção. |
+| `schema.sql` | Definir a estrutura inicial das tabelas e seus relacionamentos. |
+
+Para o MVP, o SQLite poderá armazenar os registros operacionais e os resultados produzidos durante a execução.
+
+O banco deverá manter identificadores e timestamps para permitir consultas históricas, auditoria e diferenciação entre dados originais, dados simulados e inferências.
+
+O Parquet poderá continuar sendo utilizado para armazenar conjuntos de dados analíticos maiores, sem obrigar que todos os arquivos históricos sejam importados integralmente para o banco operacional.
+
+---
+
+## 10. Diretório `tests/` — Testes automatizados
+
+Armazenará testes para verificar o comportamento individual dos módulos e a integração entre os serviços.
+
+Arquivos recomendados:
+
+| Arquivo | Responsabilidade |
+|---|---|
+| `test_data_pipeline.py` | Verificar o tratamento de valores ausentes, ruídos, duplicações e inconsistências. |
+| `test_ml.py` | Verificar a entrada e a saída dos modelos e a estrutura dos resultados preditivos. |
+| `test_vision.py` | Verificar o processamento das imagens e a consistência das saídas da inspeção. |
+| `test_oee.py` | Validar os cálculos de disponibilidade, performance, qualidade e OEE. |
+| `test_api.py` | Verificar os endpoints, a validação das requisições e as respostas da API. |
+
+Os testes deverão utilizar amostras controladas, permitindo verificar se as funções produzem os resultados esperados para entradas conhecidas.
+
+Também será importante testar situações de erro, como CSVs com colunas ausentes, imagens inválidas, requisições malformadas e divisões por zero nos indicadores.
+
+---
+
+## 11. Diretório `reports/` — Resultados e relatórios
+
+Armazenará os resultados técnicos produzidos durante o desenvolvimento e a avaliação do MVP.
+
+### 11.1. `reports/eda/`
+
+Conterá gráficos e resultados da análise exploratória, incluindo distribuições, correlações, taxas de valores ausentes e análise temporal.
+
+### 11.2. `reports/ml/`
+
+Conterá os resultados da avaliação dos modelos, como métricas, matrizes de confusão, comparação de algoritmos e análise de erros.
+
+### 11.3. `reports/vision/`
+
+Conterá imagens de demonstração do processamento visual, exemplos de contornos, segmentações térmicas e avaliações dos resultados da inspeção.
+
+Esses diretórios serão destinados a resultados derivados, evitando misturar relatórios com os dados originais ou com os artefatos executáveis dos modelos.
+
+---
+
+## 12. Diretório `docs/` — Documentação técnica
+
+Conterá a documentação necessária para compreender, executar e manter o projeto.
+
+Arquivos recomendados:
+
+| Arquivo | Responsabilidade |
+|---|---|
+| `arquitetura.md` | Descrever os módulos, as dependências e o fluxo geral da aplicação. |
+| `dicionario_dados.md` | Documentar as variáveis, os tipos, as unidades, os domínios válidos e o significado de cada coluna. |
+| `api.md` | Descrever os endpoints, parâmetros, schemas e respostas da API. |
+| `metodologia.md` | Documentar o tratamento de dados, o treinamento, a avaliação dos modelos e os critérios de inspeção visual. |
+
+A documentação deverá registrar as limitações do MVP, os pressupostos adotados para a simulação e as diferenças entre resultados demonstrativos e resultados que poderiam ser obtidos em ambiente industrial real.
+
+---
+
+## 13. Arquivos de configuração da raiz
+
+### 13.1. `.env.example`
+
+Será o modelo de configuração das variáveis de ambiente utilizadas pela aplicação.
+
+Poderá conter variáveis como:
+
+- `DATABASE_URL`: localização do banco de dados.
+- `API_HOST`: endereço de interface da API.
+- `API_PORT`: porta de execução.
+- `SIMULATION_INTERVAL`: intervalo configurável entre eventos simulados.
+- `LOG_LEVEL`: nível de detalhamento dos registros de execução.
+
+O arquivo conterá apenas valores de exemplo, sem credenciais reais. Um arquivo `.env` local poderá ser criado a partir dele, sem ser versionado no Git.
+
+### 13.2. `.gitignore`
+
+Definirá os arquivos e diretórios que não deverão ser enviados ao repositório Git.
+
+Deverá considerar:
+
+- Ambientes virtuais Python.
+- Arquivos `.env`.
+- Cache do Python e do Jupyter.
+- Arquivos temporários.
+- Logs de execução.
+- Dados volumosos ou confidenciais, quando não houver autorização para versionamento.
+- Modelos treinados e datasets gerados, conforme a estratégia de versionamento adotada.
+
+A configuração deverá ser compatível com a necessidade de compartilhar o código-fonte sem expor credenciais ou incluir arquivos desnecessários.
+
+### 13.3. `requirements.txt`
+
+Listará as dependências Python necessárias para instalar e executar o projeto.
+
+Entre as bibliotecas previstas estão:
+
+- `pandas`: manipulação de dados tabulares.
+- `numpy`: operações numéricas.
+- `scipy`: ferramentas estatísticas e científicas.
+- `scikit-learn`: treinamento e avaliação de modelos.
+- `imbalanced-learn`: técnicas de tratamento do desbalanceamento, quando necessárias.
+- `xgboost`: algoritmo de boosting, caso selecionado.
+- `opencv-python`: processamento de imagens.
+- `fastapi`: desenvolvimento da API.
+- `uvicorn`: servidor ASGI.
+- `pydantic`: validação de dados.
+- `streamlit`: construção da interface.
+- `plotly`: gráficos interativos.
+- `joblib`: persistência de determinados artefatos de modelos.
+- `pytest`: testes automatizados.
+
+A lista definitiva deverá ser ajustada às bibliotecas efetivamente utilizadas e às versões compatíveis com o ambiente de execução.
+
+### 13.4. `Dockerfile`
+
+Definirá a imagem de execução de um serviço do projeto, incluindo a imagem-base, a instalação das dependências e a configuração do comando de inicialização.
+
+A implementação poderá utilizar um Dockerfile comum ou Dockerfiles separados para a API e o frontend, conforme a necessidade de dependências e a organização do ambiente.
+
+### 13.5. `docker-compose.yml`
+
+Definirá como os serviços do MVP serão executados e conectados.
+
+Poderá orquestrar:
+
+- API FastAPI.
+- Interface Streamlit.
+- Volumes persistentes para o banco e os dados necessários.
+- Variáveis de ambiente.
+- Redes internas entre os serviços.
+- Configurações de inicialização e verificações de saúde.
+
+A configuração deverá respeitar a separação entre código, dados persistentes e artefatos gerados.
+
+### 13.6. `README.md`
+
+Será o documento inicial do repositório, destinado a orientar qualquer pessoa que precise conhecer ou executar o projeto.
+
+Deverá apresentar:
+
+- Objetivo e escopo do MVP.
+- Tecnologias utilizadas.
+- Arquitetura resumida.
+- Estrutura de diretórios.
+- Requisitos de instalação.
+- Procedimentos para configurar o ambiente.
+- Comandos para executar os módulos e serviços.
+- Forma de utilizar os dados simulados.
+- Limitações conhecidas e próximos passos.
+
+---
+
+## 14. Fluxo de integração entre os módulos
+
+O fluxo principal da aplicação será dividido em duas entradas: dados tabulares e imagens.
+
+### 14.1. Dados tabulares
+
+1. O usuário importa um CSV ou envia leituras por meio da API.
+2. O backend valida a requisição e encaminha os dados ao serviço de ingestão.
+3. O pipeline executa a limpeza, a validação física e a engenharia de atributos.
+4. Os dados processados são persistidos no formato adequado.
+5. O modelo tabular realiza a inferência sobre as novas leituras.
+6. Os resultados das previsões e os eventos operacionais são registrados.
+7. O módulo OEE calcula os indicadores a partir dos dados de produção e paradas disponíveis.
+8. O frontend consulta a API e apresenta os resultados históricos ou atualizados.
+
+### 14.2. Imagens industriais
+
+1. O usuário disponibiliza uma imagem para inspeção.
+2. O backend valida o arquivo e encaminha a imagem ao serviço de inspeção.
+3. O módulo de visão computacional executa o pré-processamento e a análise.
+4. O resultado identifica regiões suspeitas e, quando suportado pela implementação, classifica os defeitos.
+5. O resultado da inspeção é persistido para consulta posterior.
+6. O dashboard apresenta a imagem analisada e as informações correspondentes.
+
+### 14.3. Histórico e dados em fluxo
+
+Os dados históricos e os eventos recebidos durante a execução deverão possuir identificação de origem e timestamp. Isso permitirá filtrar e comparar períodos sem confundir registros já existentes com os eventos recém-gerados pelo simulador.
+
+As previsões deverão ser associadas às leituras que as originaram, permitindo rastrear qual conjunto de dados foi utilizado e qual versão do modelo produziu o resultado.
+
+---
+
+## 15. Considerações de arquitetura e limitações do MVP
+
+A estrutura foi planejada para separar responsabilidades e permitir o desenvolvimento gradual. Entretanto, alguns critérios deverão ser definidos durante a implementação:
+
+1. **Qualidade dos dados:** o tratamento deve respeitar o significado físico de cada variável, sem substituir indiscriminadamente valores inválidos por médias ou zeros.
+2. **Treinamento:** o desbalanceamento de classes deverá ser tratado sem contaminar os conjuntos de validação e teste.
+3. **Visão computacional:** o uso de técnicas tradicionais ou de modelos treinados deverá ser decidido de acordo com as imagens e os rótulos disponíveis.
+4. **OEE:** o cálculo depende de dados operacionais de produção e paradas, que poderão precisar ser simulados.
+5. **Persistência:** os registros históricos, as previsões e os eventos devem permanecer identificáveis e consultáveis.
+6. **Integração:** a API será a interface entre os módulos operacionais e o frontend, evitando que a interface execute diretamente as rotinas de treinamento.
+7. **Segurança:** os arquivos de configuração não deverão conter credenciais reais, e a API deverá validar os dados recebidos.
+8. **Reprodutibilidade:** o treinamento deverá registrar os parâmetros, as métricas e as versões dos artefatos gerados.
+
+Por se tratar de um MVP, a arquitetura poderá ser executada em um único computador com Docker Compose, sem necessidade inicial de infraestrutura distribuída ou integração com controladores industriais reais.
+
+## 16. Conclusão
+
+A arquitetura do VulcanTech-OEE organiza o projeto em módulos de engenharia de dados, Machine Learning, visão computacional, indicadores de eficiência operacional, simulação, API, persistência e visualização.
+
+A principal vantagem dessa organização é permitir que cada componente seja desenvolvido e testado isoladamente, mantendo interfaces bem definidas para a integração final.
+
+O desenvolvimento deverá começar pela inspeção dos dados existentes e pela implementação do pipeline de tratamento. Em seguida, serão desenvolvidos e avaliados os modelos, o processamento das imagens, os indicadores de OEE e o simulador. A API e o dashboard serão integrados após a definição dos contratos de dados e dos resultados esperados de cada módulo.
+
+Essa sequência reduz retrabalho, facilita a identificação de erros e estabelece uma base técnica para evoluir o MVP para uma solução de monitoramento industrial mais completa.

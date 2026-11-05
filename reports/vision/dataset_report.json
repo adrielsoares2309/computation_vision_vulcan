@@ -1,0 +1,111 @@
+{
+  "class_mapping": {
+    "APROVADA": 0,
+    "REPROVADA": 1
+  },
+  "expected_seed_files": [
+    "solda_aprovada.png",
+    "solda_reprovada.png",
+    "termica_solda_aprovada.png",
+    "termica_solda_reprovada.png"
+  ],
+  "records": [
+    {
+      "path": "C:\\Users\\adriel_soares2\\Documents\\VulcanTech Smart Metals S.A\\data\\raw\\imagens\\solda_aprovada.png",
+      "relative_path": "data\\raw\\imagens\\solda_aprovada.png",
+      "label": "APROVADA",
+      "label_index": 0,
+      "modality": "visual",
+      "group_id": "solda_aprovada",
+      "source": "nome_do_arquivo_inicial",
+      "bytes": 3619138,
+      "sha256": "a445aaaa4697d0d510016527addd77a3c206bd47e294867a41af88b9fe11a211",
+      "valid": true,
+      "format": "PNG",
+      "width": 1672,
+      "height": 940,
+      "mode": "RGB",
+      "channels": 3
+    },
+    {
+      "path": "C:\\Users\\adriel_soares2\\Documents\\VulcanTech Smart Metals S.A\\data\\raw\\imagens\\solda_reprovada.png",
+      "relative_path": "data\\raw\\imagens\\solda_reprovada.png",
+      "label": "REPROVADA",
+      "label_index": 1,
+      "modality": "visual",
+      "group_id": "solda_reprovada",
+      "source": "nome_do_arquivo_inicial",
+      "bytes": 3830509,
+      "sha256": "6911badae9065d3766ef9518b4a229fc8cdf5e71836b98b4071093df0730664b",
+      "valid": true,
+      "format": "PNG",
+      "width": 1672,
+      "height": 940,
+      "mode": "RGB",
+      "channels": 3
+    },
+    {
+      "path": "C:\\Users\\adriel_soares2\\Documents\\VulcanTech Smart Metals S.A\\data\\raw\\imagens\\termica_solda_aprovada.png",
+      "relative_path": "data\\raw\\imagens\\termica_solda_aprovada.png",
+      "label": "APROVADA",
+      "label_index": 0,
+      "modality": "termica",
+      "group_id": "solda_aprovada",
+      "source": "nome_do_arquivo_inicial",
+      "bytes": 3043989,
+      "sha256": "1367a2e510f06e2c3e0da244748247afd6fa1624fa78b5615b44391982a496f9",
+      "valid": true,
+      "format": "PNG",
+      "width": 1672,
+      "height": 941,
+      "mode": "RGB",
+      "channels": 3
+    },
+    {
+      "path": "C:\\Users\\adriel_soares2\\Documents\\VulcanTech Smart Metals S.A\\data\\raw\\imagens\\termica_solda_reprovada.png",
+      "relative_path": "data\\raw\\imagens\\termica_solda_reprovada.png",
+      "label": "REPROVADA",
+      "label_index": 1,
+      "modality": "termica",
+      "group_id": "solda_reprovada",
+      "source": "nome_do_arquivo_inicial",
+      "bytes": 2763382,
+      "sha256": "9fe67323bbd6620590a071a6fb2a3b845e8c85794baeac6e72f7a339225d113f",
+      "valid": true,
+      "format": "PNG",
+      "width": 1672,
+      "height": 940,
+      "mode": "RGB",
+      "channels": 3
+    }
+  ],
+  "missing_files": [],
+  "invalid_files": [],
+  "valid_count": 4,
+  "invalid_count": 0,
+  "missing_count": 0,
+  "exact_duplicates": [],
+  "duplicate_count": 0,
+  "counts_by_class": {
+    "APROVADA": 2,
+    "REPROVADA": 2
+  },
+  "counts_by_modality": {
+    "termica": 2,
+    "visual": 2
+  },
+  "counts_by_modality_and_class": {
+    "termica/APROVADA": 1,
+    "termica/REPROVADA": 1,
+    "visual/APROVADA": 1,
+    "visual/REPROVADA": 1
+  },
+  "unique_groups_by_modality_and_class": {
+    "termica/APROVADA": 1,
+    "termica/REPROVADA": 1,
+    "visual/APROVADA": 1,
+    "visual/REPROVADA": 1
+  },
+  "manifest_path": "data\\processed\\vision\\labels.csv",
+  "manifest_rows": 0
+}

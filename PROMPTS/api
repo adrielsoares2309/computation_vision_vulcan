@@ -1,0 +1,935 @@
+# PROMPT PARA CLAUDE OPUS — IMPLEMENTAÇÃO COMPLETA DA API E INTEGRAÇÃO DO ECOSSISTEMA VULCANTECH
+
+## 1. Papel e objetivo
+
+Atue como um engenheiro de software sênior, arquiteto de sistemas industriais e especialista em Python, FastAPI, integração de sistemas, bancos de dados, Machine Learning, visão computacional e aplicações de monitoramento industrial.
+
+Seu objetivo é implementar a API completa do projeto **VulcanTech Smart Metals S.A.**, conectar o frontend Streamlit a todos os serviços de backend e integrar os componentes de processamento de dados, modelos de inteligência artificial, visão computacional, OEE e manutenção preditiva.
+
+Você deverá trabalhar diretamente no repositório existente, preservando as implementações válidas e respeitando a arquitetura, os requisitos e a documentação do projeto.
+
+**REGRA FUNDAMENTAL: NÃO COMECE PROGRAMANDO A API. Primeiro, examine integralmente o projeto, leia a documentação e identifique como todos os módulos existentes devem se comunicar.**
+
+Não crie uma implementação paralela, não invente funcionalidades já existentes e não substitua componentes funcionais sem justificativa técnica.
+
+---
+
+# FASE 1 — AUDITORIA OBRIGATÓRIA DO PROJETO
+
+Antes de criar ou modificar qualquer arquivo de código, execute uma análise estruturada do repositório.
+
+## 1.1. Examine a estrutura completa
+
+Percorra o projeto e identifique:
+
+- Todos os diretórios e arquivos relevantes.
+- Arquivos Python existentes e suas responsabilidades.
+- Notebooks de tratamento e análise de dados.
+- Scripts de simulação de sensores.
+- Pipelines de pré-processamento.
+- Modelos de Machine Learning treinados e seus metadados.
+- Modelos e pipelines de visão computacional.
+- Implementações existentes de OEE.
+- Componentes, páginas e serviços do frontend Streamlit.
+- Configurações de banco de dados.
+- Arquivos de configuração e dependências.
+- Testes automatizados.
+- Relatórios técnicos e documentação de arquitetura.
+- Arquivos `.env`, exemplos de configuração e variáveis de ambiente, sem expor segredos.
+
+Não presuma que a estrutura planejada na documentação corresponde exatamente à implementação atual. Confirme a existência dos arquivos antes de utilizá-los.
+
+Examine também os arquivos de configuração do projeto, como `requirements.txt`, `pyproject.toml`, configurações de execução, scripts de inicialização e arquivos de migração, caso existam.
+
+## 1.2. Leia toda a documentação relevante
+
+Antes da implementação, leia os documentos Markdown, relatórios técnicos, especificações, instruções de implementação e documentação dos modelos disponíveis no repositório.
+
+Dê atenção especial a:
+
+- Requisitos funcionais e não funcionais.
+- Regras de negócio industriais.
+- Procedimentos de limpeza e transformação dos dados.
+- Definição dos indicadores OEE.
+- Especificações do sistema de visão computacional.
+- Especificações da manutenção preditiva.
+- Formato das entradas e saídas dos modelos.
+- Regras de classificação e nomenclatura das falhas.
+- Fluxos de dados entre simulação, processamento, inferência e interface.
+- Decisões arquiteturais já documentadas.
+
+Não considere um requisito atendido apenas porque está descrito na documentação. Verifique se ele foi realmente implementado.
+
+Quando houver divergências entre documentação, código e estrutura de dados, registre a divergência e determine a solução mais consistente com os requisitos do projeto. Não faça alterações destrutivas silenciosamente.
+
+## 1.3. Analise o frontend antes de definir os endpoints
+
+Examine todas as páginas, componentes, gráficos, indicadores, formulários, filtros, botões e elementos interativos do Streamlit.
+
+Identifique, para cada elemento:
+
+1. Qual dado precisa receber.
+2. Qual serviço deverá fornecer esse dado.
+3. Qual operação deverá executar.
+4. Se a operação precisa ser persistida.
+5. Se depende de um modelo de IA.
+6. Se precisa de atualização periódica ou em tempo real.
+7. Como apresentar estados de carregamento, indisponibilidade e erro.
+
+O frontend deverá manter a identidade visual existente: interface industrial moderna, fundo branco, paleta de azuis e cinzas, gráficos legíveis, ícones SVG ou Material Symbols e navegação pelas áreas:
+
+- OEE.
+- Visão Computacional.
+- Manutenção Preditiva.
+
+Não redesenhe o frontend sem necessidade. Priorize a integração funcional com a interface existente.
+
+## 1.4. Analise os dados e modelos reais
+
+Examine os arquivos de dados e os metadados disponíveis para determinar:
+
+- Quais dados estão disponíveis.
+- Quais colunas representam sensores, equipamentos, timestamps, produção e falhas.
+- Quais transformações são necessárias antes da inferência.
+- Quais modelos estão efetivamente treinados.
+- Quais são os formatos dos arquivos de modelos.
+- Quais classes cada modelo prevê.
+- Quais são as unidades de medida dos sensores.
+- Quais são os requisitos de entrada de cada modelo.
+- Se os modelos podem ser carregados e executados no ambiente atual.
+
+Para visão computacional, identifique os formatos de imagem aceitos, o pré-processamento esperado, o mapeamento das classes e a modalidade de entrada: imagem convencional ou imagem térmica.
+
+Para manutenção preditiva, verifique o modelo tabular existente, as features utilizadas no treinamento, a ordem das colunas, a transformação dos dados e o mapeamento das classes.
+
+**Nunca altere a ordem das features, os nomes das classes ou o pré-processamento de um modelo sem verificar como ele foi treinado.**
+
+Se os artefatos estiverem ausentes ou incompletos, implemente respostas explícitas de indisponibilidade, em vez de fabricar previsões.
+
+## 1.5. Gere um diagnóstico antes de programar
+
+Crie o arquivo:
+
+`reports/architecture/auditoria_integracao.md`
+
+Esse relatório deverá conter:
+
+- Estrutura atual do projeto.
+- Tecnologias efetivamente utilizadas.
+- Componentes existentes e suas responsabilidades.
+- Fluxos atuais de dados.
+- Modelos e artefatos disponíveis.
+- Estado atual do frontend.
+- Estado atual do banco de dados.
+- Integrações que já funcionam.
+- Integrações ausentes.
+- Problemas encontrados.
+- Incompatibilidades entre módulos.
+- Riscos técnicos.
+- Endpoints necessários.
+- Plano de implementação por etapas.
+- Critérios de aceitação.
+
+Crie o diretório de relatórios apenas se necessário.
+
+Ao concluir a auditoria, apresente um resumo das descobertas e prossiga para a implementação, sem exigir uma confirmação intermediária, desde que não haja uma decisão destrutiva, ambiguidade crítica ou necessidade de credenciais externas.
+
+**Não implemente a API antes de concluir a auditoria e documentar o diagnóstico.**
+
+---
+
+# FASE 2 — DEFINIÇÃO DA ARQUITETURA DE INTEGRAÇÃO
+
+Com base no código e na documentação reais, defina a arquitetura de integração mais adequada.
+
+A arquitetura de referência é:
+
+```text
+                    FRONTEND STREAMLIT
+                           |
+                           | HTTP / JSON
+                           v
+                      FASTAPI
+                           |
+             +-------------+-------------+
+             |             |             |
+             v             v             v
+         OEE SERVICE   VISION SERVICE   ML SERVICE
+             |             |             |
+             v             v             v
+       Dados produção   Imagens       Modelos tabulares
+       Eventos/paradas  Pipeline CV   Pipeline de inferência
+             |             |             |
+             +-------------+-------------+
+                           |
+                           v
+                CAMADA DE DADOS
+                           |
+              +------------+------------+
+              |            |            |
+              v            v            v
+          CSV/Parquet    SQLite ou     Dados de
+          se aplicável   PostgreSQL    sensores
+                           ^
+                           |
+                    SIMULADOR INDUSTRIAL
+```
+
+Esse diagrama é uma referência conceitual, não uma exigência de duplicação de componentes.
+
+Adapte-o à arquitetura encontrada durante a auditoria.
+
+### Regras arquiteturais
+
+- O frontend não deverá executar diretamente a lógica dos modelos.
+- O frontend deverá consumir os serviços através da API, salvo quando a auditoria justificar uma integração local específica.
+- As rotas HTTP deverão ser responsáveis por receber e validar requisições, chamar os serviços e retornar respostas estruturadas.
+- A lógica de negócio deverá permanecer na camada de serviços.
+- A persistência deverá ser isolada em uma camada de acesso a dados.
+- A lógica dos modelos deverá ser reutilizada, sem duplicar pipelines de treinamento ou pré-processamento.
+- Os simuladores deverão continuar separados dos serviços de produção.
+- Os modelos deverão ser carregados de maneira controlada, evitando recarregamento desnecessário a cada requisição.
+- A API deverá informar claramente quando estiver usando dados históricos, simulados ou reais.
+- Não misture resultados simulados com resultados reais sem identificação explícita.
+- Evite criar abstrações desnecessárias para um MVP.
+
+Se a API já existir parcialmente, audite e evolua a implementação atual em vez de criar outra API concorrente.
+
+---
+
+# FASE 3 — IMPLEMENTAÇÃO DO BACKEND FASTAPI
+
+Implemente uma API organizada, documentada, validada e preparada para integração com o frontend.
+
+Utilize FastAPI, Pydantic e as bibliotecas já adotadas pelo projeto. Adicione dependências somente quando forem necessárias.
+
+Uma estrutura de referência possível é:
+
+```text
+backend/
+├── app/
+│   ├── main.py
+│   ├── config.py
+│   ├── dependencies.py
+│   ├── schemas/
+│   │   ├── common.py
+│   │   ├── health.py
+│   │   ├── oee.py
+│   │   ├── vision.py
+│   │   ├── predictive_maintenance.py
+│   │   └── sensors.py
+│   ├── routes/
+│   │   ├── health.py
+│   │   ├── oee.py
+│   │   ├── vision.py
+│   │   ├── predictive_maintenance.py
+│   │   ├── sensors.py
+│   │   └── simulation.py
+│   ├── services/
+│   │   ├── oee_service.py
+│   │   ├── vision_service.py
+│   │   ├── ml_service.py
+│   │   ├── sensor_service.py
+│   │   └── simulation_service.py
+│   ├── repositories/
+│   ├── middleware/
+│   └── utils/
+└── tests/
+```
+
+Essa estrutura deverá ser adaptada ao projeto real. Não mova arquivos existentes automaticamente se isso puder quebrar imports, notebooks ou scripts.
+
+## 3.1. Inicialização e configuração
+
+Implemente:
+
+- Aplicação FastAPI principal.
+- Configuração centralizada.
+- Prefixo de versão para a API, preferencialmente `/api/v1`.
+- CORS restrito às origens configuradas.
+- Inicialização e encerramento seguros dos recursos.
+- Tratamento global de exceções.
+- Logging estruturado.
+- Documentação OpenAPI.
+- Endpoint de saúde.
+- Endpoint de prontidão.
+- Verificação de disponibilidade dos modelos e do banco de dados, quando aplicável.
+
+Utilize variáveis de ambiente para configurações como:
+
+- `API_HOST`
+- `API_PORT`
+- `API_BASE_URL`
+- `DATABASE_URL`
+- `FRONTEND_ORIGINS`
+- `LOG_LEVEL`
+- `MODEL_DIR`
+
+Crie ou atualize `.env.example` com valores ilustrativos, sem credenciais reais.
+
+Não sobrescreva o `.env` existente e nunca inclua senhas, tokens ou dados privados nos relatórios.
+
+## 3.2. Contratos de API
+
+Defina schemas Pydantic para todas as entradas e saídas relevantes.
+
+Os contratos devem estabelecer:
+
+- Campos obrigatórios e opcionais.
+- Tipos de dados.
+- Unidades de medida.
+- Intervalos válidos.
+- Formato de timestamps e fuso horário.
+- Identificação do equipamento.
+- Origem dos dados.
+- Estados de execução.
+- Estrutura de erros.
+- Estrutura de resultados de inferência.
+
+Padronize respostas e evite retornar objetos Python não serializáveis.
+
+Não utilize valores fictícios como fallback silencioso quando um serviço falhar.
+
+---
+
+# FASE 4 — ENDPOINTS DO SISTEMA
+
+Implemente os endpoints necessários com base nos componentes reais encontrados na auditoria.
+
+Os exemplos abaixo representam o contrato desejado. Ajuste os nomes ou agrupe as rotas quando isso fizer sentido para a arquitetura existente, mantendo as funcionalidades equivalentes.
+
+## 4.1. Saúde e diagnóstico
+
+- `GET /api/v1/health`
+- `GET /api/v1/ready`
+- `GET /api/v1/system/status`
+
+O sistema deverá informar:
+
+- Estado da API.
+- Estado do banco de dados.
+- Estado dos serviços.
+- Disponibilidade dos modelos.
+- Versão da aplicação, se disponível.
+- Erros de inicialização que afetem a operação.
+
+Não exponha caminhos internos sensíveis, segredos ou detalhes desnecessários de infraestrutura.
+
+O endpoint de saúde deve indicar se o processo está ativo. O endpoint de prontidão deve indicar se os recursos essenciais para atender requisições estão disponíveis.
+
+## 4.2. OEE — Overall Equipment Effectiveness
+
+Implemente endpoints para:
+
+- Consultar indicadores atuais.
+- Consultar histórico por intervalo de tempo.
+- Consultar indicadores por equipamento ou linha.
+- Consultar disponibilidade, performance e qualidade.
+- Consultar produção total e produção aprovada/reprovada, se houver esses dados.
+- Consultar paradas e eventos.
+- Consultar séries temporais utilizadas pelos gráficos.
+- Aplicar filtros de data, equipamento e turno quando os dados suportarem esses filtros.
+
+Exemplos de rotas:
+
+- `GET /api/v1/oee/summary`
+- `GET /api/v1/oee/history`
+- `GET /api/v1/oee/equipment`
+- `GET /api/v1/oee/downtime`
+- `GET /api/v1/oee/events`
+
+### Regras de negócio
+
+Utilize as fórmulas documentadas no projeto.
+
+Se não houver fórmulas documentadas, verifique as regras adotadas no código e registre a decisão técnica antes de definir uma nova implementação.
+
+Não invente tempos planejados, ciclos ideais, produção total ou paradas.
+
+Quando faltar informação para calcular um indicador, retorne estado de indisponibilidade ou dado insuficiente, em vez de gerar um percentual enganoso.
+
+Verifique os denominadores antes de calcular percentuais e trate divisões por zero corretamente.
+
+Não calcule OEE pela média simples de percentuais sem justificativa técnica.
+
+Os resultados devem ser consistentes entre os indicadores, os gráficos e os filtros.
+
+## 4.3. Visão computacional — inspeção de soldas
+
+Implemente um endpoint para receber uma imagem e executar o pipeline real de inferência disponível no projeto.
+
+Exemplo:
+
+`POST /api/v1/vision/predict`
+
+O endpoint deverá:
+
+1. Receber uma imagem por `multipart/form-data`.
+2. Validar extensão, MIME type e tamanho máximo.
+3. Verificar se o arquivo pode ser decodificado.
+4. Identificar ou receber a modalidade da imagem.
+5. Aplicar o pré-processamento exigido pelo modelo.
+6. Executar a inferência.
+7. Interpretar as classes conforme o treinamento.
+8. Retornar o resultado estruturado.
+9. Registrar metadados da inspeção, quando houver persistência implementada.
+10. Tratar erros sem interromper a API.
+
+Modalidades previstas, se compatíveis com o projeto:
+
+- Imagem convencional.
+- Imagem térmica.
+
+As classificações da interface devem utilizar a nomenclatura documentada, como `APROVADA`, `REPROVADA` e, quando tecnicamente necessário, `INDETERMINADA`.
+
+Retorne, quando disponíveis:
+
+- Identificador da inspeção.
+- Classe prevista.
+- Probabilidades ou scores.
+- Modalidade utilizada.
+- Timestamp.
+- Estado da inferência.
+- Versão do modelo.
+- Indicação de que o modelo é experimental.
+
+Não confunda score de classificação com probabilidade calibrada.
+
+Se o modelo não existir, não puder ser carregado ou estiver marcado como experimental, informe isso corretamente. Não invente classes, resultados ou probabilidades.
+
+Como o conjunto de imagens pode ser insuficiente para treinamento industrial confiável, não apresente o sistema como validado industrialmente sem evidências documentadas.
+
+Implemente também, caso os dados e a persistência permitam:
+
+- `GET /api/v1/vision/history`
+- `GET /api/v1/vision/summary`
+
+A consulta de histórico deverá retornar somente inspeções realmente registradas.
+
+## 4.4. Manutenção preditiva
+
+Implemente endpoints para:
+
+- Executar inferência com os dados dos sensores.
+- Consultar a última previsão disponível.
+- Consultar histórico de previsões.
+- Consultar estado dos equipamentos.
+- Consultar alertas de manutenção.
+- Consultar séries temporais de sensores.
+- Consultar informações de disponibilidade dos modelos.
+
+Exemplos:
+
+- `POST /api/v1/maintenance/predict`
+- `GET /api/v1/maintenance/latest`
+- `GET /api/v1/maintenance/history`
+- `GET /api/v1/maintenance/alerts`
+- `GET /api/v1/maintenance/equipment`
+- `GET /api/v1/maintenance/sensors`
+
+A inferência deverá utilizar as features e o pré-processamento reais do treinamento.
+
+Verifique se os modelos existentes preveem falhas específicas, classes genéricas ou alguma outra variável. Não assuma que um modelo prevê superaquecimento, desgaste de rolamento ou desbalanceamento do rotor sem comprovar isso no mapeamento de classes e no treinamento.
+
+A interface poderá exibir essas categorias somente se houver modelos ou regras de negócio implementadas que as sustentem.
+
+As respostas devem incluir, quando disponíveis:
+
+- Equipamento.
+- Timestamp da leitura.
+- Classe prevista.
+- Score ou probabilidades.
+- Estado operacional.
+- Versão do modelo.
+- Origem dos dados.
+- Estado da inferência.
+
+Não execute treinamento de modelos dentro de uma requisição HTTP normal.
+
+## 4.5. Sensores e telemetria
+
+Implemente endpoints para:
+
+- Receber leituras de sensores, caso esse fluxo faça parte da arquitetura.
+- Consultar leituras recentes.
+- Consultar histórico por equipamento.
+- Consultar a última leitura de cada sensor.
+- Consultar indicadores resumidos de telemetria.
+
+Exemplos:
+
+- `POST /api/v1/sensors/readings`
+- `GET /api/v1/sensors/latest`
+- `GET /api/v1/sensors/history`
+- `GET /api/v1/sensors/equipment/{equipment_id}`
+
+Utilize o esquema real dos dados e as unidades encontradas no projeto.
+
+Valide timestamps, valores numéricos, identificadores e limites plausíveis documentados.
+
+Não descarte silenciosamente leituras inválidas. Registre ou retorne os erros conforme o contrato definido.
+
+Não crie tabelas ou campos sem necessidade comprovada.
+
+## 4.6. Simulação industrial
+
+O frontend deverá poder controlar a simulação por meio da API, caso isso seja compatível com a arquitetura encontrada.
+
+Exemplos:
+
+- `GET /api/v1/simulation/status`
+- `POST /api/v1/simulation/start`
+- `POST /api/v1/simulation/stop`
+- `POST /api/v1/simulation/mode`
+
+Se existirem modos operacionais documentados, utilize os nomes e comportamentos existentes.
+
+A API deverá controlar o ciclo de vida do simulador sem iniciar processos duplicados a cada clique, sem bloquear o event loop e sem deixar processos órfãos.
+
+Não permita que uma requisição HTTP execute comandos arbitrários do sistema operacional.
+
+Caso o simulador deva continuar como processo independente, implemente comunicação segura e compatível com a arquitetura existente, em vez de incorporá-lo à força ao servidor FastAPI.
+
+Os dados gerados pelo simulador deverão ser identificados como simulados.
+
+---
+
+# FASE 5 — BANCO DE DADOS E PERSISTÊNCIA
+
+Primeiro identifique o banco de dados efetivamente adotado pelo projeto.
+
+Não introduza PostgreSQL, SQLite ou outro banco apenas por preferência pessoal se já houver uma solução consistente e funcional.
+
+Se houver um banco relacional:
+
+- Centralize a configuração de conexão.
+- Utilize sessões e transações corretamente.
+- Implemente repositórios para consultas e gravações.
+- Crie migrações quando a arquitetura utilizar esse mecanismo.
+- Defina índices para consultas frequentes.
+- Evite abrir conexões a cada operação sem necessidade.
+- Trate falhas de conexão.
+- Evite duplicação de registros em operações repetidas quando isso for relevante.
+
+Se o projeto utilizar CSV ou Parquet como fonte de dados, mantenha esse fluxo quando ele for parte da arquitetura documentada.
+
+Não converta automaticamente todos os arquivos em tabelas de banco de dados.
+
+Separe claramente:
+
+- Dados brutos.
+- Dados processados.
+- Dados de inferência.
+- Dados simulados.
+- Histórico persistido de eventos e previsões.
+
+O sistema não deverá modificar os dados brutos durante consultas, inferências ou atualizações do frontend.
+
+Se não houver persistência histórica implementada, documente essa limitação e implemente apenas a persistência necessária ao escopo aprovado, sem inventar histórico.
+
+---
+
+# FASE 6 — CONECTAR O FRONTEND STREAMLIT À API
+
+Esta etapa é obrigatória. Não basta criar endpoints que funcionem isoladamente: todas as páginas relevantes deverão consumir os serviços reais.
+
+## 6.1. Cliente HTTP centralizado
+
+Crie ou adapte um módulo de cliente HTTP compartilhado pelo frontend.
+
+Esse cliente deverá:
+
+- Centralizar a URL base da API.
+- Utilizar variáveis de ambiente.
+- Definir timeouts.
+- Tratar erros HTTP e falhas de conexão.
+- Validar respostas quando apropriado.
+- Evitar duplicação de código de requisições.
+- Retornar mensagens de erro compreensíveis.
+- Diferenciar indisponibilidade da API de ausência de dados.
+
+Não espalhe URLs e chamadas HTTP diretamente por todos os componentes.
+
+Se o frontend e o backend estiverem em processos separados, configure a URL por ambiente, evitando depender de `localhost` quando houver acesso remoto ou implantação em rede.
+
+## 6.2. Página OEE
+
+Conecte os indicadores, gráficos, filtros e tabelas da página OEE aos endpoints correspondentes.
+
+Cada componente deverá refletir dados retornados pela API.
+
+Implemente estados para:
+
+- Carregamento.
+- Sucesso.
+- Ausência de dados.
+- Erro.
+- API indisponível.
+
+Os filtros de data, equipamento e turno devem ser enviados à API quando aplicáveis.
+
+Os gráficos devem ser atualizados a partir das respostas reais, mantendo os estilos existentes.
+
+Não preencha gráficos com séries fictícias apenas para evitar espaços vazios.
+
+## 6.3. Página de visão computacional
+
+Conecte o upload de imagens ao endpoint de inferência.
+
+O fluxo deve permitir:
+
+1. Selecionar uma imagem.
+2. Escolher a modalidade quando necessário.
+3. Enviar a imagem para a API.
+4. Exibir progresso ou estado da operação.
+5. Apresentar o resultado real.
+6. Mostrar score ou probabilidades disponíveis.
+7. Indicar o modelo utilizado.
+8. Exibir avisos de modelo experimental.
+9. Tratar falhas de inferência.
+10. Consultar histórico quando disponível.
+
+Não simule resultados durante uma inspeção real.
+
+Se não houver modelo válido, mostre a indisponibilidade e explique o motivo de forma clara.
+
+## 6.4. Página de manutenção preditiva
+
+Conecte os KPIs, previsões, alertas e gráficos aos serviços de manutenção preditiva.
+
+A interface deverá refletir:
+
+- Última leitura disponível.
+- Equipamento selecionado.
+- Previsões produzidas pelo modelo.
+- Scores ou probabilidades disponíveis.
+- Histórico real de previsões.
+- Alertas efetivamente registrados.
+- Estado de disponibilidade dos serviços.
+
+Não apresente valores estáticos como se fossem atualizados em tempo real.
+
+## 6.5. Atualização periódica
+
+Implemente atualização periódica para os componentes que realmente precisam de atualização.
+
+Utilize o mecanismo já adotado no projeto ou uma dependência apropriada, como `streamlit-autorefresh`, se necessário.
+
+Regras:
+
+- Não execute atualizações em intervalos excessivamente curtos.
+- Evite múltiplas consultas redundantes por ciclo de renderização.
+- Utilize cache somente para dados que possam ser armazenados em cache com segurança.
+- Não mantenha previsões de sensores desatualizadas sem informar o timestamp.
+- Não utilize cache para mascarar falhas de conexão.
+- Não execute inferências caras repetidamente se nenhuma nova entrada tiver sido recebida.
+- Não confunda atualização periódica da interface com streaming em tempo real.
+
+Se o projeto realmente exigir atualização por eventos, avalie SSE ou WebSockets. Não implemente essas tecnologias apenas por complexidade aparente: polling controlado é suficiente para muitos MVPs.
+
+---
+
+# FASE 7 — INTEGRAÇÃO ENTRE OS SERVIÇOS
+
+Garanta que os fluxos completos funcionem de ponta a ponta.
+
+## Fluxo A — OEE
+
+```text
+Dados de produção
+      |
+      v
+Leitura e validação
+      |
+      v
+Serviço OEE
+      |
+      v
+Cálculo dos indicadores
+      |
+      v
+API REST
+      |
+      v
+Frontend Streamlit
+      |
+      v
+KPIs, gráficos e tabelas
+```
+
+## Fluxo B — Visão computacional
+
+```text
+Upload de imagem
+      |
+      v
+Validação da requisição
+      |
+      v
+Pré-processamento existente
+      |
+      v
+Modelo de visão computacional
+      |
+      v
+Interpretação da saída
+      |
+      v
+Resposta JSON
+      |
+      v
+Frontend: classificação e scores
+```
+
+## Fluxo C — Manutenção preditiva
+
+```text
+Sensores / arquivo / simulador
+             |
+             v
+     Validação e tratamento
+             |
+             v
+      Serviço de inferência
+             |
+             v
+       Modelo tabular
+             |
+             v
+     Previsão e metadados
+             |
+             v
+           API
+             |
+             v
+  KPIs, alertas e gráficos
+```
+
+## Fluxo D — Simulação
+
+```text
+Controle no frontend
+         |
+         v
+         API
+         |
+         v
+Gerenciador de simulação
+         |
+         v
+Dados identificados como simulados
+         |
+         v
+Persistência ou armazenamento previsto
+         |
+         v
+Serviços de análise e inferência
+         |
+         v
+Atualização do frontend
+```
+
+Adapte os fluxos às implementações reais e documente diferenças importantes.
+
+---
+
+# FASE 8 — SEGURANÇA E CONFIABILIDADE
+
+Implemente controles compatíveis com um MVP industrial, sem introduzir complexidade desnecessária.
+
+Inclua:
+
+- Validação de todas as entradas.
+- Limites para tamanho de uploads.
+- Verificação de arquivos enviados.
+- Timeouts para operações externas.
+- Tratamento de erros sem exposição de stack traces ao usuário.
+- Logging sem senhas ou dados sensíveis.
+- CORS restrito.
+- Proteção contra caminhos de arquivo arbitrários.
+- Limitação de operações de simulação.
+- Controle de concorrência quando necessário.
+- Gestão correta de recursos de banco de dados.
+- Configuração por ambiente.
+- Separação de dados simulados e reais.
+
+Se a aplicação já tiver autenticação, respeite e integre o mecanismo existente.
+
+Se não houver autenticação implementada, documente a limitação e não invente um sistema de usuários completo sem requisito. Entretanto, identifique os endpoints que exigiriam autenticação em um ambiente de produção.
+
+Não exponha operações administrativas, controle de simulação ou detalhes internos desnecessariamente.
+
+---
+
+# FASE 9 — TESTES AUTOMATIZADOS
+
+Crie ou amplie os testes para validar tanto os endpoints quanto a integração entre as camadas.
+
+Utilize pytest e TestClient do FastAPI, além das bibliotecas já presentes no projeto.
+
+Teste pelo menos:
+
+### API
+
+- Inicialização da aplicação.
+- Endpoint de saúde.
+- Endpoint de prontidão.
+- Validação de schemas.
+- Respostas de erro.
+- Parâmetros de consulta.
+- CORS configurado.
+- Tratamento de serviço indisponível.
+
+### OEE
+
+- Cálculos com dados válidos.
+- Ausência de dados.
+- Intervalos inválidos.
+- Divisão por zero.
+- Consistência entre KPIs e séries temporais.
+
+### Visão computacional
+
+- Upload válido.
+- Arquivo inválido.
+- Arquivo excessivamente grande.
+- Modelo indisponível.
+- Erro de inferência.
+- Formato correto da resposta.
+
+### Manutenção preditiva
+
+- Features corretas.
+- Modelo indisponível.
+- Dados incompletos.
+- Classes mapeadas corretamente.
+- Tratamento de falhas de inferência.
+
+### Frontend
+
+- Cliente HTTP.
+- Tratamento de erros.
+- Conversão de respostas para os componentes.
+- Ausência de dependência de dados fictícios.
+- Funcionamento das páginas sem a API disponível.
+
+### Integração
+
+Crie testes que percorram o fluxo completo usando dados de teste isolados e modelos de teste quando necessário.
+
+Não faça testes dependerem de acesso à internet, credenciais reais ou equipamentos físicos.
+
+Não substitua os modelos reais por mocks e depois afirme que a integração com os modelos reais foi validada. Identifique claramente os testes unitários, os testes com mocks e os testes de integração real.
+
+Execute os testes e registre os resultados efetivamente observados.
+
+---
+
+# FASE 10 — EXECUÇÃO E INTEGRAÇÃO REAL
+
+Após implementar os componentes:
+
+1. Instale ou atualize somente as dependências necessárias.
+2. Verifique os imports.
+3. Verifique a configuração das variáveis de ambiente.
+4. Execute os testes.
+5. Inicie a API no ambiente disponível.
+6. Verifique `/docs`, `/openapi.json` e os endpoints de saúde.
+7. Execute o frontend Streamlit.
+8. Valide as chamadas entre frontend e backend.
+9. Teste os fluxos OEE, visão computacional e manutenção preditiva.
+10. Verifique o comportamento com modelos indisponíveis.
+11. Verifique o comportamento com banco de dados indisponível.
+12. Corrija erros encontrados e repita os testes pertinentes.
+
+Não afirme que a aplicação está funcionando sem executar as verificações possíveis.
+
+Se não for possível iniciar algum componente devido à ausência de dependências, arquivos de modelos, dados ou serviços externos, registre o impedimento e indique o procedimento necessário.
+
+Não instale ferramentas globais ou altere configurações da máquina sem necessidade.
+
+Preserve o ambiente virtual existente.
+
+---
+
+# FASE 11 — DOCUMENTAÇÃO FINAL
+
+Crie ou atualize os seguintes documentos, adaptando os caminhos à estrutura existente:
+
+- `reports/architecture/auditoria_integracao.md`
+- `reports/architecture/arquitetura_api.md`
+- `reports/architecture/contratos_api.md`
+- `reports/architecture/fluxos_de_dados.md`
+- `reports/architecture/validacao_integracao.md`
+
+Documente:
+
+- Arquitetura implementada.
+- Responsabilidade de cada módulo.
+- Endpoints e métodos HTTP.
+- Parâmetros e schemas.
+- Exemplos de requisição e resposta.
+- Códigos de erro.
+- Variáveis de ambiente.
+- Configuração do banco.
+- Carregamento dos modelos.
+- Como executar o backend.
+- Como executar o frontend.
+- Como iniciar o sistema completo.
+- Como executar os testes.
+- Limitações identificadas.
+- Funcionalidades que dependem de modelos ou dados ausentes.
+- Resultados dos testes efetivamente executados.
+
+Inclua exemplos reais e compatíveis com os schemas implementados. Não invente resultados de inferência.
+
+Atualize o `README.md` principal com as instruções de execução, preservando as informações úteis já existentes.
+
+---
+
+# FASE 12 — CRITÉRIOS DE ACEITAÇÃO
+
+O trabalho somente poderá ser considerado concluído quando os critérios abaixo tiverem sido verificados ou quando as limitações restantes estiverem documentadas de forma explícita.
+
+- [ ] O projeto e a documentação foram auditados antes da implementação da API.
+- [ ] O diagnóstico foi documentado.
+- [ ] A arquitetura implementada corresponde ao projeto existente.
+- [ ] A API FastAPI inicia corretamente.
+- [ ] Os endpoints possuem schemas e validação.
+- [ ] O frontend utiliza um cliente HTTP centralizado.
+- [ ] A página OEE consome dados da API.
+- [ ] A página de visão computacional envia imagens à API.
+- [ ] A página de manutenção preditiva consome previsões e sensores disponíveis.
+- [ ] O controle do simulador funciona, caso esse fluxo esteja implementado e seja aplicável.
+- [ ] Os modelos são carregados de forma controlada.
+- [ ] Os dados reais, históricos e simulados são identificados corretamente.
+- [ ] Os erros de comunicação são tratados na interface.
+- [ ] Não existem resultados fictícios apresentados como resultados reais.
+- [ ] Os testes automatizados foram executados.
+- [ ] A documentação de execução e integração foi atualizada.
+- [ ] As limitações e os testes não executados estão registrados.
+
+---
+
+# REGRAS FINAIS DE EXECUÇÃO
+
+1. **Audite primeiro; programe depois.**
+2. Trabalhe diretamente nos arquivos do repositório existente.
+3. Não responda apenas com exemplos ou trechos de código: implemente as alterações necessárias.
+4. Não recrie módulos funcionais sem necessidade técnica.
+5. Não substitua algoritmos, modelos ou dados reais por exemplos fictícios.
+6. Não altere o pipeline de treinamento apenas para facilitar a API.
+7. Não modifique dados brutos.
+8. Não esconda falhas retornando dados simulados como fallback.
+9. Não crie endpoints que retornem valores estáticos apenas para aparentar funcionamento.
+10. Não declare integração completa se apenas os endpoints tiverem sido criados.
+11. Não declare validação industrial de modelos experimentais.
+12. Prefira código modular, tipado, testável e com responsabilidades claras.
+13. Evite abstrações, dependências e infraestrutura desnecessárias para o escopo atual.
+14. Preserve as convenções e os padrões já adotados no repositório.
+15. Se encontrar uma decisão crítica sem solução documentada, registre a questão e escolha uma alternativa conservadora apenas quando for possível prosseguir sem risco de quebrar o projeto.
+16. Antes de modificar ou excluir arquivos, examine seu conteúdo e identifique suas dependências.
+17. Não apague implementações existentes para substituir por uma versão simplificada.
+18. Ao final, apresente um relatório objetivo com arquivos criados ou modificados, endpoints implementados, integrações validadas, testes executados, resultados observados e limitações pendentes.
+
+**Comece agora pela FASE 1. Examine a estrutura, leia a documentação, rastreie as dependências entre os módulos e produza a auditoria antes de implementar a API.**

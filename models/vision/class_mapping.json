@@ -1,0 +1,10 @@
+{
+  "class_to_index": {
+    "APROVADA": 0,
+    "REPROVADA": 1
+  },
+  "index_to_class": {
+    "0": "APROVADA",
+    "1": "REPROVADA"
+  }
+}

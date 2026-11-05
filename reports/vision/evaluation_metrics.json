@@ -1,0 +1,18 @@
+{
+  "status": "insufficient_independent_data",
+  "metrics": null,
+  "confusion_matrix": null,
+  "reasons": [
+    "Modo tiny autorizado: apenas um exemplar por classe/modalidade; não há validação ou teste independentes."
+  ],
+  "per_modality": {
+    "termica": {
+      "APROVADA": 1,
+      "REPROVADA": 1
+    },
+    "visual": {
+      "APROVADA": 1,
+      "REPROVADA": 1
+    }
+  }
+}

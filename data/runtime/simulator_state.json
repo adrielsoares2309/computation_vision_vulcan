@@ -1,0 +1,8 @@
+{
+  "status": "stopped",
+  "pid": 22912,
+  "regime": "Producao_Normal",
+  "interval_seconds": 5.0,
+  "last_cycle_at": "2026-11-05T10:25:32",
+  "cycle_count": 1
+}
