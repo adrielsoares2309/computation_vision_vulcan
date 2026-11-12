@@ -27,6 +27,7 @@ DESIGN_TOKENS: dict[str, Any] = {
         # Textos sobre superfícies claras
         "text_primary": "#102A43",      # 14.81:1 sobre #FFFFFF
         "text_secondary": "#183B56",    # 11.45:1 sobre #FFFFFF
+        "text_heading": "#183B56",      # 11.45:1 sobre #FFFFFF
         "text_muted": "#334E68",        # 8.46:1 sobre #FFFFFF
         # Textos sobre sidebar clara (#FFFFFF)
         "sidebar_text": "#102A43",      # 14.81:1 sobre #FFFFFF | 13.34:1 sobre #F0F4F8

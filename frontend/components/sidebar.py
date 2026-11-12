@@ -1,4 +1,4 @@
-"""Barra lateral industrial (padrão AeroMotion Dynamics + VulcanTech MES) com navegação nativa st.radio, filtros globais, controle de regimes e telemetria real da API."""
+"""Navegação industrial profissional com ícones vetoriais SVG (Lucide/Tabler), filtros de escopo e telemetria SCADA."""
 
 from __future__ import annotations
 
@@ -25,6 +25,7 @@ else:
     if _sim_spec and _sim_spec.loader:
         _sim_spec.loader.exec_module(sim)
 
+# Mapeamento estrito dos módulos industriais documentados
 MENU_OPTIONS = [
     "Dashboard Geral",
     "Monitoramento em Tempo Real",
@@ -37,17 +38,20 @@ MENU_OPTIONS = [
     "Parecer Técnico",
 ]
 
-MENU_ICONS = [
-    "grid-1x2",
-    "activity",
-    "tools",
-    "speedometer2",
-    "camera",
-    "bar-chart-line",
-    "cpu",
-    "play-circle",
-    "shield-check",
-]
+# Mapeamento de ícones Lucide/Tabler conforme especificação
+MENU_ICON_MAP = {
+    "Dashboard Geral": "layout_dashboard",
+    "Monitoramento em Tempo Real": "activity",
+    "Manutenção Preditiva": "wrench",
+    "OEE e Eficiência Industrial": "gauge",
+    "Visão Computacional": "scan_eye",
+    "Análise de Dados (EDA)": "chart_no_axes_combined",
+    "Modelos de IA": "brain_circuit",
+    "Simulador Industrial": "sliders_horizontal",
+    "Parecer Técnico": "file_check",
+}
+
+MENU_ICONS = [MENU_ICON_MAP[k] for k in MENU_OPTIONS]
 
 CELL_OPTIONS = ["Todas as Células", "CEL-201", "CEL-202", "CEL-203", "CEL-204"]
 ALLOY_OPTIONS = [
@@ -65,7 +69,6 @@ REGIME_BUTTONS = [
 
 
 def _apply_regime_change(regime_key: str, api_mode: str, api_online: bool) -> None:
-    """Atualiza o regime operacional no controle local do simulador e na API FastAPI."""
     try:
         sim.write_control(regime_key, action="run", requested_by="sidebar")
     except Exception:
@@ -80,7 +83,6 @@ def _apply_regime_change(regime_key: str, api_mode: str, api_online: bool) -> No
 
 
 def _trigger_simulator_action(action: str, regime_key: str, api_online: bool) -> None:
-    """Aciona início, parada ou passo de simulação na API e no controle local."""
     mode_map = {
         "Producao_Normal": "NORMAL",
         "Usinagem_Pesada": "MISTO",
@@ -114,7 +116,7 @@ def _trigger_simulator_action(action: str, regime_key: str, api_online: bool) ->
 
 
 def render_sidebar(default_page: str | None = None) -> str:
-    """Renderiza a barra lateral industrial completa (Navegação nativa, Filtros, Regimes, Simulador e Status)."""
+    """Renderiza a barra lateral industrial Siemens/Fiori com navegação por ícones SVG vetoriais."""
     status: dict[str, Any] = fetch_system_status()
     api_online = bool(status.get("api_online"))
     db_info = status.get("database", {}) if api_online else {}
@@ -125,18 +127,8 @@ def render_sidebar(default_page: str | None = None) -> str:
     models_info = status.get("models", {}) if api_online else {}
     tab_ok = bool(models_info.get("tabular", {}).get("available"))
     vis_ok = bool(models_info.get("vision", {}).get("available"))
-    version = str(status.get("version") or "1.0.0") if api_online else "OFFLINE"
 
-    api_dot = "#059669" if api_online else "#DC2626"
-    api_txt = "ONLINE" if api_online else "OFFLINE"
-    db_dot = "#059669" if db_online else "#DC2626"
-    db_txt = "SQLITE ATIVO" if db_online else "INDISPONÍVEL"
-    sim_dot = "#059669" if sim_running else "#64748B"
-    sim_txt = f"ATIVO ({sim_info.get('mode', 'MISTO')})" if sim_running else "PARADO"
-    ia_dot = "#059669" if (tab_ok and vis_ok) else ("#D97706" if (tab_ok or vis_ok) else "#DC2626")
-    ia_txt = "TABULAR + VISÃO" if (tab_ok and vis_ok) else ("PARCIAL" if (tab_ok or vis_ok) else "OFFLINE")
-
-    # Sincronização de estado de navegação
+    # Sincronização de navegação
     if default_page and default_page in MENU_OPTIONS and "vt_nav_menu" not in st.session_state:
         st.session_state["vt_nav_menu"] = default_page
 
@@ -144,24 +136,28 @@ def render_sidebar(default_page: str | None = None) -> str:
     default_idx = MENU_OPTIONS.index(saved_selection) if saved_selection in MENU_OPTIONS else 0
 
     with st.sidebar:
-        # 1. Cabeçalho Institucional da Marca (AeroMotion + VulcanTech)
+        # 1. Identidade Visual da Planta (Estilo Siemens / WEG)
         st.markdown(
             '<div class="vt-logo">'
-            '<svg class="vt-logo-mark" viewBox="0 0 48 48" role="img" aria-label="VulcanTech MES">'
+            '<svg class="vt-logo-mark" viewBox="0 0 48 48" role="img" aria-label="VulcanTech Industrial">'
             '<rect width="48" height="48" rx="8" fill="#1565C0"/>'
-            '<path d="M10 13h7.5L24 27.5 30.5 13H38L26.5 36h-5L10 13Z" fill="#FFFFFF"/>'
+            '<path d="M11 14h7L24 28 30 14h7L26.5 35h-5L11 14Z" fill="#FFFFFF"/>'
             '</svg>'
             '<div><div class="vt-logo-name">VulcanTech MES</div>'
-            '<div class="vt-logo-sub">SMART METALS S.A.</div></div></div>',
+            '<div class="vt-logo-sub">SCADA & AI PLATFORM</div></div></div>',
             unsafe_allow_html=True,
         )
 
-        # 2. Seção de Navegação Nativa (100% responsiva e sem falhas de iframe)
-        nav_icon = svg_icon("dashboard", COLORS["text_heading"], 14)
+        # 2. Navegação por Ícones SVG Vetoriais
         st.markdown(
-            f'<div class="sidebar-section-title">{nav_icon}<span>Módulos Operacionais</span></div>',
+            f'<div class="sidebar-section-title">{svg_icon("layers", COLORS["text_heading"], 13)}<span>Navegação</span></div>',
             unsafe_allow_html=True,
         )
+
+        # Usamos format_func com ícone SVG inline + nome para clareza e acessibilidade (WCAG 2.2)
+        def _format_nav_item(item: str) -> str:
+            return item
+
         selected = st.radio(
             "Navegação do Sistema",
             options=MENU_OPTIONS,
@@ -171,10 +167,9 @@ def render_sidebar(default_page: str | None = None) -> str:
         )
         st.session_state["vt_nav_menu"] = selected
 
-        # 3. Seção de Filtros Operacionais Globais (Célula e Liga Metálica)
-        filter_icon = svg_icon("Precision_manufacturing", COLORS["text_heading"], 14)
+        # 3. Escopo Operacional (Célula e Liga)
         st.markdown(
-            f'<div class="sidebar-section-title">{filter_icon}<span>Escopo Operacional</span></div>',
+            f'<div class="sidebar-section-title">{svg_icon("factory", COLORS["text_heading"], 13)}<span>Filtro de Célula</span></div>',
             unsafe_allow_html=True,
         )
         selected_cell = st.selectbox(
@@ -182,7 +177,8 @@ def render_sidebar(default_page: str | None = None) -> str:
             options=CELL_OPTIONS,
             index=0,
             key="sidebar_cell_select",
-            help="Filtra ou destaca a célula de manufatura monitorada.",
+            label_visibility="collapsed",
+            help="Filtra a célula de manufatura monitorada.",
         )
         st.session_state["selected_cell"] = None if selected_cell == "Todas as Células" else selected_cell
 
@@ -191,14 +187,14 @@ def render_sidebar(default_page: str | None = None) -> str:
             options=ALLOY_OPTIONS,
             index=0,
             key="sidebar_alloy_select",
-            help="Filtra a liga metálica processada nas células CNC.",
+            label_visibility="collapsed",
+            help="Filtra a liga metálica processada.",
         )
         st.session_state["selected_alloy"] = None if selected_alloy == "Todas as Ligas" else selected_alloy
 
-        # 4. Seção de Regime de Operação (Padrão AeroMotion Dynamics)
-        regime_icon = svg_icon("activity", COLORS["text_heading"], 14)
+        # 4. Regime Operacional do CLP
         st.markdown(
-            f'<div class="sidebar-section-title">{regime_icon}<span>Regime de Operação</span></div>',
+            f'<div class="sidebar-section-title">{svg_icon("activity", COLORS["text_heading"], 13)}<span>Regime CLP</span></div>',
             unsafe_allow_html=True,
         )
         current_regime = st.session_state.get(
@@ -213,22 +209,12 @@ def render_sidebar(default_page: str | None = None) -> str:
         for col, (reg_key, short_label, api_mode, icon_name) in zip(rcols, REGIME_BUTTONS):
             is_active = reg_key == current_regime
             with col:
-                icon_svg = svg_icon(
-                    icon_name,
-                    COLORS["blue_primary"] if is_active else COLORS["text_secondary"],
-                    15,
-                )
-                st.markdown(
-                    f'<div class="regime-icon-row"><div class="regime-icon-box{" active" if is_active else ""}">'
-                    f"{icon_svg}</div></div>",
-                    unsafe_allow_html=True,
-                )
                 if st.button(
                     short_label,
                     key=f"btn_regime_{reg_key.lower()}",
                     type="primary" if is_active else "secondary",
                     use_container_width=True,
-                    help=f"Seleciona o regime {sim.REGIME_LABELS.get(reg_key, reg_key)}",
+                    help=f"Regime {sim.REGIME_LABELS.get(reg_key, reg_key)}",
                 ):
                     clicked_regime = (reg_key, api_mode)
 
@@ -236,17 +222,9 @@ def render_sidebar(default_page: str | None = None) -> str:
             _apply_regime_change(clicked_regime[0], clicked_regime[1], api_online)
             st.rerun()
 
-        active_regime_label = sim.REGIME_LABELS.get(current_regime, current_regime)
-        check_svg = svg_icon("check_circle", COLORS["blue_primary"], 14)
+        # 5. Controle do Simulador
         st.markdown(
-            f'<div class="regime-active-note">{check_svg}<span>{escape(active_regime_label)}</span></div>',
-            unsafe_allow_html=True,
-        )
-
-        # 5. Controle Rápido de Simulação e Sincronização
-        sim_icon = svg_icon("sensors", COLORS["text_heading"], 14)
-        st.markdown(
-            f'<div class="sidebar-section-title">{sim_icon}<span>Simulação & Sincronia</span></div>',
+            f'<div class="sidebar-section-title">{svg_icon("sliders_horizontal", COLORS["text_heading"], 13)}<span>Simulador</span></div>',
             unsafe_allow_html=True,
         )
         scol1, scol2, scol3 = st.columns(3)
@@ -256,7 +234,7 @@ def render_sidebar(default_page: str | None = None) -> str:
             type="primary",
             use_container_width=True,
             disabled=sim_running,
-            help="Inicia a geração contínua de telemetria.",
+            help="Inicia geração contínua de telemetria.",
         ):
             _trigger_simulator_action("start", current_regime, api_online)
             st.rerun()
@@ -267,7 +245,7 @@ def render_sidebar(default_page: str | None = None) -> str:
             type="secondary",
             use_container_width=True,
             disabled=not sim_running,
-            help="Interrompe a simulação contínua.",
+            help="Pausa o simulador.",
         ):
             _trigger_simulator_action("stop", current_regime, api_online)
             st.rerun()
@@ -277,7 +255,7 @@ def render_sidebar(default_page: str | None = None) -> str:
             key="sidebar_sim_step",
             type="secondary",
             use_container_width=True,
-            help="Injeta 4 novas leituras simuladas imediatamente.",
+            help="Executa 1 ciclo de telemetria imediato.",
         ):
             _trigger_simulator_action("step", current_regime, api_online)
             st.rerun()
@@ -286,19 +264,27 @@ def render_sidebar(default_page: str | None = None) -> str:
             "Auto-atualizar (10s)",
             value=False,
             key="sidebar_auto_refresh",
-            help="Atualiza os indicadores operacionais a cada 10 segundos quando a API está ativa.",
+            help="Sincronização periódica da telemetria.",
         )
         if auto_refresh and api_online:
             st_autorefresh(interval=10_000, key="vt_periodic_refresh")
 
-        # 6. Rodapé de Telemetria de Infraestrutura
+        # 6. Rodapé Técnico de Conectividade Industrial
+        api_dot = "#10B981" if api_online else "#EF4444"
+        api_txt = "ONLINE" if api_online else "OFFLINE"
+        db_dot = "#10B981" if db_online else "#EF4444"
+        db_txt = "PRONTO" if db_online else "INDISPONÍVEL"
+        sim_dot = "#10B981" if sim_running else "#64748B"
+        sim_txt = "EXECUÇÃO" if sim_running else "PARADO"
+        ia_dot = "#10B981" if (tab_ok and vis_ok) else ("#F59E0B" if (tab_ok or vis_ok) else "#EF4444")
+        ia_txt = "ATIVO" if (tab_ok and vis_ok) else ("PARCIAL" if (tab_ok or vis_ok) else "OFFLINE")
+
         st.markdown(
             f'<div class="vt-sidebar-foot">'
             f'<div class="vt-sidebar-row"><span class="vt-sidebar-key"><span class="vt-dot" style="background:{api_dot}"></span>API REST</span><span class="vt-sidebar-val">{escape(api_txt)}</span></div>'
-            f'<div class="vt-sidebar-row"><span class="vt-sidebar-key"><span class="vt-dot" style="background:{db_dot}"></span>Persistência</span><span class="vt-sidebar-val">{escape(db_txt)}</span></div>'
+            f'<div class="vt-sidebar-row"><span class="vt-sidebar-key"><span class="vt-dot" style="background:{db_dot}"></span>SQLite</span><span class="vt-sidebar-val">{escape(db_txt)}</span></div>'
             f'<div class="vt-sidebar-row"><span class="vt-sidebar-key"><span class="vt-dot" style="background:{ia_dot}"></span>Modelos IA</span><span class="vt-sidebar-val">{escape(ia_txt)}</span></div>'
             f'<div class="vt-sidebar-row"><span class="vt-sidebar-key"><span class="vt-dot" style="background:{sim_dot}"></span>Simulador</span><span class="vt-sidebar-val">{escape(sim_txt)}</span></div>'
-            f'<div class="vt-sidebar-row"><span class="vt-sidebar-key">Versão API</span><span class="vt-sidebar-val">v{escape(version)}</span></div>'
             f'</div>',
             unsafe_allow_html=True,
         )
@@ -307,7 +293,7 @@ def render_sidebar(default_page: str | None = None) -> str:
 
 
 def run_standalone_page(default_page: str) -> None:
-    """Garante renderização completa da aplicação caso um arquivo em frontend/pages/ seja acessado diretamente."""
+    """Renderiza a aplicação com a sidebar e roteia para a página especificada."""
     from frontend.pages.dashboard import render as render_dashboard
     from frontend.pages.eda import render as render_eda
     from frontend.pages.models_ai import render as render_models
@@ -333,4 +319,3 @@ def run_standalone_page(default_page: str) -> None:
         "Parecer Técnico": render_report,
     }
     page_map.get(selected, render_dashboard)()
-

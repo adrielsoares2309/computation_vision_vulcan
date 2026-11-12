@@ -1,19 +1,20 @@
-"""Página 2: Monitoramento em Tempo Real — Sensores industriais, IEM e telemetria por célula."""
+"""Página 2: Monitoramento em Tempo Real — Sensores Industriais, IEM e Telemetria Operacional."""
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
 from typing import Any
 
 import numpy as np
 import pandas as pd
-import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
+from frontend.components.charts import apply_chart_theme
+from frontend.components.header import render_header
+from frontend.components.icons import svg_icon
+from frontend.components.kpi_card import render_kpi
 from frontend.services.api_client import get_api_client
 from frontend.styles import DESIGN_TOKENS
-from src.data.feature_engineering import calcular_iem
 from src.simulation.sensor_simulator import generate_simulated_sensor_reading
 
 
@@ -21,91 +22,83 @@ def render() -> None:
     c = DESIGN_TOKENS["colors"]
     client = get_api_client()
 
-    st.markdown(
-        """
-        <div style="margin-bottom:1.2rem;">
-            <h1 style="margin:0; font-size:1.6rem; color:#0F172A; font-weight:800;">
-                MONITORAMENTO DE SENSORES EM TEMPO REAL
-            </h1>
-            <div style="font-size:0.85rem; color:#475569; font-weight:500;">
-                Telemetria multivariada, Índice de Esforço Mecânico (IEM) e controle estatístico por liga
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
+    render_header(
+        title="Monitoramento em Tempo Real",
+        description="Telemetria de variáveis de processo, grandezas de usinagem e Índice de Esforço Mecânico (IEM).",
+        icon="activity",
+        context_badge=("TELEMETRIA ATIVA", "success"),
     )
 
-    # Controles de Filtro
-    fcol1, fcol2, fcol3 = st.columns([1, 1, 1])
-    with fcol1:
-        celula_selecionada = st.selectbox(
+    # 1. Barra Compacta de Filtros de Processo
+    fc1, fc2, fc3 = st.columns([1.2, 1.2, 1.0], vertical_alignment="center")
+    with fc1:
+        celula = st.selectbox(
             "Célula Operacional",
             options=["CEL-201", "CEL-202", "CEL-203", "CEL-204"],
             index=0,
+            key="rt_cell_select",
         )
-    with fcol2:
-        liga_selecionada = st.selectbox(
-            "Liga Metálica em Processo",
+    with fc2:
+        liga = st.selectbox(
+            "Liga em Usinagem",
             options=["Aco_Carbono_316L", "Aluminio_7075", "Liga_Titanio_Ti6Al4V"],
             index=0,
+            key="rt_alloy_select",
         )
-    with fcol3:
-        st.write("")
-        st.write("")
-        btn_amostrar = st.button("Capturar Leitura de Sensores", use_container_width=True)
+    with fc3:
+        capturar = st.button("Capturar Leitura", type="primary", use_container_width=True, key="rt_btn_capture")
 
-    # Obter leitura atual (API ou simulador em tempo real)
+    # 2. Obtenção de Leitura Real ou Simulação com Inércia
     leitura: dict[str, Any] = {}
     try:
-        leitura = client.get(f"/sensors/latest?equipment_id={celula_selecionada}")
+        leitura = client.get(f"/sensors/latest?equipment_id={celula}", timeout=2.0)
     except Exception:
         leitura = generate_simulated_sensor_reading(
             mode="NORMAL",
-            equipment_id=celula_selecionada,
-            alloy=liga_selecionada,
+            equipment_id=celula,
+            alloy=liga,
         )
 
-    # Cálculos derivados
     temp = float(leitura.get("temperatura_fuso_c", 52.0))
     vib = float(leitura.get("vibracao_triaxial_rms_mms", 1.8))
     torque = float(leitura.get("torque_fuso_nm", 110.0))
     vazao = float(leitura.get("vazao_refrigerante_lmin", 28.0))
-    corrente = float(leitura.get("corrente_estator_amp", 28.0))
     pressao = float(leitura.get("pressao_hidraulica_bar", 160.0))
-    ruido = float(leitura.get("nivel_ruido_db", 55.0))
 
     iem = (torque * vib) / (vazao + 1.0)
 
-    # Indicador de severidade IEM
+    # 3. Bloco de Destaque IEM (Minimalismo Funcional)
     if iem >= 50.0:
-        cor_iem = "#DC2626"
-        status_iem = "CRÍTICO (Risco Iminente)"
+        iem_tone = "danger"
+        iem_status = "CRÍTICO (Sobrecarga Severa)"
+        border_c = "#EF4444"
     elif iem >= 25.0:
-        cor_iem = "#D97706"
-        status_iem = "ALERTA (Esforço Elevado)"
+        iem_tone = "warning"
+        iem_status = "ALERTA (Esforço Elevado)"
+        border_c = "#F59E0B"
     else:
-        cor_iem = "#059669"
-        status_iem = "NOMINAL (Normal)"
+        iem_tone = "success"
+        iem_status = "NOMINAL (Operação Estável)"
+        border_c = "#10B981"
 
-    # Bloco de destaque do IEM
     st.markdown(
         f"""
-        <div class="vt-card" style="background:#FFFFFF; border-left: 6px solid {cor_iem}; padding: 18px; margin-bottom: 20px;">
+        <div class="vt-card" style="border-left: 6px solid {border_c}; padding: 14px 18px; margin-bottom: 14px;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <div>
-                    <span style="font-size:0.8rem; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.05em;">
-                        Índice de Esforço Mecânico (IEM) — Feature Engineering Industrial
-                    </span>
-                    <div style="font-size:2.4rem; font-weight:900; color:{cor_iem}; line-height:1.1;">
-                        {iem:.2f} <span style="font-size:1.0rem; font-weight:600; color:#64748B;">pontos</span>
+                    <div style="font-size:0.75rem; font-weight:700; color:#475569; text-transform:uppercase;">
+                        Índice de Esforço Mecânico (IEM) · Célula {celula}
                     </div>
-                    <div style="font-size:0.85rem; color:#334155; margin-top:4px;">
-                        Fórmula: <code>(Torque × Vibração) / (Vazão + 1)</code> | Status: <b>{status_iem}</b>
+                    <div style="font-size:2.0rem; font-weight:900; color:{border_c}; line-height:1.2;">
+                        {iem:.2f} <span style="font-size:0.85rem; font-weight:600; color:#64748B;">pts</span>
+                    </div>
+                    <div style="font-size:0.78rem; color:#334E68;">
+                        Fórmula: <code>(Torque × Vibração) / (Vazão + 1)</code> · Estado: <b>{iem_status}</b>
                     </div>
                 </div>
                 <div style="text-align:right;">
-                    <span class="vt-badge" style="background:{cor_iem}20; color:{cor_iem}; font-size:0.85rem; padding:6px 14px; font-weight:700;">
-                        {status_iem}
+                    <span class="vt-badge vt-badge-{'success' if iem_tone=='success' else ('warning' if iem_tone=='warning' else 'danger')}">
+                        {iem_status}
                     </span>
                 </div>
             </div>
@@ -114,150 +107,46 @@ def render() -> None:
         unsafe_allow_html=True,
     )
 
-    # Painel dos 7 Sensores Principais
-    st.markdown("<h3 style='font-size:1.1rem; font-weight:700; color:#0F172A; margin-bottom:12px;'>Grandezas Físicas Monitoradas</h3>", unsafe_allow_html=True)
+    # 4. Indicadores de Grandezas Críticas (Siemens SCADA)
+    k1, k2, k3, k4 = st.columns(4)
+    with k1:
+        render_kpi("Temperatura do Fuso", f"{temp:.1f} °C", "Limite: < 75.0 °C", "activity", "danger" if temp >= 75 else "primary")
+    with k2:
+        render_kpi("Vibração RMS", f"{vib:.2f} mm/s", "ISO 10816: < 4.5 mm/s", "sensors", "danger" if vib >= 4.5 else "primary")
+    with k3:
+        render_kpi("Torque Mecânico", f"{torque:.1f} Nm", "Nominal: 90 - 150 Nm", "gauge", "primary")
+    with k4:
+        render_kpi("Vazão Refrigerante", f"{vazao:.1f} L/min", "Mínimo Seguro: > 15 L/min", "speed", "danger" if vazao < 15 else "success")
 
-    sc1, sc2, sc3, sc4 = st.columns(4)
-    sc5, sc6, sc7, sc8 = st.columns(4)
+    st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
 
-    with sc1:
-        st.markdown(
-            f"""
-            <div class="vt-card" style="padding:14px; border:1px solid #CBD5E1;">
-                <div style="font-size:0.75rem; color:#64748B; font-weight:700;">TEMP. FUSO</div>
-                <div style="font-size:1.6rem; font-weight:800; color:#0F172A;">{temp:.1f} °C</div>
-                <div style="font-size:0.75rem; color:{'#DC2626' if temp > 80 else '#059669'};">Nominal: &lt; 75.0 °C</div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-    with sc2:
-        st.markdown(
-            f"""
-            <div class="vt-card" style="padding:14px; border:1px solid #CBD5E1;">
-                <div style="font-size:0.75rem; color:#64748B; font-weight:700;">VIBRAÇÃO RMS</div>
-                <div style="font-size:1.6rem; font-weight:800; color:#0F172A;">{vib:.2f} mm/s</div>
-                <div style="font-size:0.75rem; color:{'#DC2626' if vib > 4.5 else '#059669'};">ISO 10816: &lt; 4.5 mm/s</div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-    with sc3:
-        st.markdown(
-            f"""
-            <div class="vt-card" style="padding:14px; border:1px solid #CBD5E1;">
-                <div style="font-size:0.75rem; color:#64748B; font-weight:700;">TORQUE DO FUSO</div>
-                <div style="font-size:1.6rem; font-weight:800; color:#0F172A;">{torque:.1f} Nm</div>
-                <div style="font-size:0.75rem; color:#64748B;">Limite Máx: 220.0 Nm</div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-    with sc4:
-        st.markdown(
-            f"""
-            <div class="vt-card" style="padding:14px; border:1px solid #CBD5E1;">
-                <div style="font-size:0.75rem; color:#64748B; font-weight:700;">VAZÃO REFRIGERANTE</div>
-                <div style="font-size:1.6rem; font-weight:800; color:#0F172A;">{vazao:.1f} L/min</div>
-                <div style="font-size:0.75rem; color:{'#DC2626' if vazao < 12 else '#059669'};">Mínimo: &gt; 15.0 L/min</div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-    with sc5:
-        st.markdown(
-            f"""
-            <div class="vt-card" style="padding:14px; border:1px solid #CBD5E1;">
-                <div style="font-size:0.75rem; color:#64748B; font-weight:700;">CORRENTE ESTATOR</div>
-                <div style="font-size:1.6rem; font-weight:800; color:#0F172A;">{corrente:.1f} A</div>
-                <div style="font-size:0.75rem; color:#64748B;">Potência Spindle</div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-    with sc6:
-        st.markdown(
-            f"""
-            <div class="vt-card" style="padding:14px; border:1px solid #CBD5E1;">
-                <div style="font-size:0.75rem; color:#64748B; font-weight:700;">PRESSÃO HIDRÁULICA</div>
-                <div style="font-size:1.6rem; font-weight:800; color:#0F172A;">{pressao:.1f} bar</div>
-                <div style="font-size:0.75rem; color:{'#DC2626' if pressao < 130 else '#059669'};">Faixa: 140 - 180 bar</div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-    with sc7:
-        st.markdown(
-            f"""
-            <div class="vt-card" style="padding:14px; border:1px solid #CBD5E1;">
-                <div style="font-size:0.75rem; color:#64748B; font-weight:700;">NÍVEL DE RUÍDO</div>
-                <div style="font-size:1.6rem; font-weight:800; color:#0F172A;">{ruido:.1f} dB</div>
-                <div style="font-size:0.75rem; color:#64748B;">Acústica de Usinagem</div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-    with sc8:
-        st.markdown(
-            f"""
-            <div class="vt-card" style="padding:14px; border:1px solid #CBD5E1;">
-                <div style="font-size:0.75rem; color:#64748B; font-weight:700;">TAXA AMOSTRAGEM</div>
-                <div style="font-size:1.6rem; font-weight:800; color:#0F172A;">5 min</div>
-                <div style="font-size:0.75rem; color:#059669;">288 leituras / 24h</div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-    st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
-
-    # Gráficos de Série Temporal Simulado / Recente
-    st.markdown("<h3 style='font-size:1.1rem; font-weight:700; color:#0F172A;'>Tendência Temporal Recente (Últimas Leituras)</h3>", unsafe_allow_html=True)
-
-    # Gera buffer de 30 pontos para visualização
-    np.random.seed(42)
-    pontos = 30
-    tempo_idx = pd.date_range(end=datetime.now(timezone.utc), periods=pontos, freq="5min")
-    df_tendencia = pd.DataFrame({
-        "Timestamp": tempo_idx,
-        "Vibração (mm/s)": np.clip(np.random.normal(vib, 0.4, pontos), 0.5, 12.0),
-        "Temperatura (°C)": np.clip(np.random.normal(temp, 2.5, pontos), 25.0, 110.0),
-        "IEM": np.clip(np.random.normal(iem, 3.0, pontos), 2.0, 150.0),
-    })
-
-    fig_trend = go.Figure()
-    fig_trend.add_trace(go.Scatter(
-        x=df_tendencia["Timestamp"],
-        y=df_tendencia["Vibração (mm/s)"],
-        name="Vibração RMS (mm/s)",
-        line=dict(color="#1D4ED8", width=2),
-    ))
-    fig_trend.add_trace(go.Scatter(
-        x=df_tendencia["Timestamp"],
-        y=df_tendencia["Temperatura (°C)"],
-        name="Temperatura (°C)",
-        line=dict(color="#DC2626", width=2),
-        yaxis="y2",
-    ))
-    fig_trend.update_layout(
-        height=320,
-        margin=dict(l=10, r=10, t=20, b=10),
-        yaxis=dict(title="Vibração (mm/s)"),
-        yaxis2=dict(title="Temperatura (°C)", overlaying="y", side="right"),
-        legend=dict(orientation="h", y=1.1, x=0),
-        plot_bgcolor="#FFFFFF",
-        paper_bgcolor="#FFFFFF",
+    # 5. Série Temporal Unificada (Somente o que responde a perguntas operacionais)
+    st.markdown(
+        f'<div class="section-title">{svg_icon("activity", c["text_heading"], 15)} Evolução Temporal Recente (Últimos 30 Ciclos)</div>',
+        unsafe_allow_html=True,
     )
-    st.plotly_chart(fig_trend, use_container_width=True)
+
+    # Histórico sintético determinístico com base na leitura atual
+    passos = 30
+    tempo_idx = pd.date_range(end=pd.Timestamp.now(), periods=passos, freq="10s")
+    np.random.seed(int(temp + torque) % 1000)
+    arr_iem = np.clip(iem + np.cumsum(np.random.normal(0, 0.4, passos)), 5.0, 95.0)
+    arr_vib = np.clip(vib + np.cumsum(np.random.normal(0, 0.05, passos)), 0.5, 6.0)
+
+    fig_hist = go.Figure()
+    fig_hist.add_trace(go.Scatter(x=tempo_idx, y=arr_iem, mode="lines", name="IEM (Pontos)", line=dict(color="#1565C0", width=2.2)))
+    fig_hist.add_trace(go.Scatter(x=tempo_idx, y=arr_vib * 10.0, mode="lines", name="Vibração × 10 (mm/s)", line=dict(color="#D97706", width=1.8, dash="dot")))
+    fig_hist.add_hline(y=50.0, line_dash="dash", line_color="#EF4444", annotation_text="Limiar Crítico IEM (50 pts)")
+    apply_chart_theme(fig_hist, height=240)
+    fig_hist.update_layout(
+        margin=dict(l=10, r=10, t=10, b=10),
+        xaxis=dict(title="Horário"),
+        yaxis=dict(title="Índice"),
+    )
+    st.plotly_chart(fig_hist, use_container_width=True, config={"displayModeBar": False})
 
 
-if __name__ in ('__main__', '__page__'):
+if __name__ in ("__main__", "__page__"):
     from frontend.components.sidebar import run_standalone_page
-    run_standalone_page('Monitoramento em Tempo Real')
+
+    run_standalone_page("Monitoramento em Tempo Real")
